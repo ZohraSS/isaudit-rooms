@@ -291,7 +291,7 @@ function generate(code) {
       const user = t === 'SHARED' ? pick(SHARED_USERS) : pick(TEST_USERS);
       const last = t === 'SHARED' ? D - ri(0, 6) : D - ri(200, 700);
       acc = { id, user, owner: '—', role: t === 'TEST' ? 'Admin' : 'İstifadəçi', mfa: 'Yox', last };
-      if (t === 'SHARED') k = { tokens: ['Q3'], risk: ['Yüksək', 'Orta'], ev: ['sahib', 'ortaq', user], why: 'Sahibi göstərilmir və ad hesabın ortaq olduğunu göstərir (Q3). Hesab Admin olmadığı üçün MFA-nın olmaması Q4 deyil.' };
+      if (t === 'SHARED') k = { tokens: ['Q3'], risk: ['Yüksək'], ev: ['sahib', 'ortaq', user], why: 'Sahibi göstərilmir və ad hesabın ortaq olduğunu göstərir (Q3). Hesab Admin olmadığı üçün MFA-nın olmaması Q4 deyil.' };
       else {
         k = { tokens: ['Q3', 'Q4', 'Q5'], risk: ['Yüksək'], ev: [fmtDay(last), 'sahib', String(D - last)], why: 'Sahibsiz (Q3) Admin hesabıdır, MFA yoxdur (Q4), son girişdən ' + (D - last) + ' gün keçib (Q5 üzrə nəzərdən keçirmə).' };
         calc.push({ id: 'c2', acc: id, q: user + ' hesabının son girişindən audit tarixinə (16.10.2026) neçə gün keçib?', answer: D - last });
@@ -301,7 +301,7 @@ function generate(code) {
       let dept, pos, status = 'Aktiv', role = 'İstifadəçi', mfa = 'Var', last = D - ri(0, 12);
       if (t === 'OK_ADMIN' || t === 'IT_NOMFA') { dept = 'IT'; pos = t === 'OK_ADMIN' ? 'Sistem administratoru' : 'IT mütəxəssisi'; role = 'Admin'; mfa = t === 'OK_ADMIN' ? 'Var' : 'Yox'; }
       else { [dept, pos] = pick(NONIT_POS); }
-      if (t === 'OK_ADMIN') k = { tokens: ['OK'], risk: ['—', 'Aşağı'], ev: [], why: 'IT işçisidir, Admin, MFA var, son giriş yaxındır: verilən sübutda pozuntu görünmür.' };
+      if (t === 'OK_ADMIN') k = { tokens: ['OK'], risk: ['—'], ev: [], why: 'IT işçisidir, Admin, MFA var, son giriş yaxındır: verilən sübutda pozuntu görünmür.' };
       if (t === 'IT_NOMFA') k = { tokens: ['Q4'], risk: ['Yüksək'], ev: ['MFA'], why: 'IT işçisi olduğu üçün Admin rolu Q2-yə uyğundur, amma Admin hesabında MFA yoxdur (Q4).' };
       if (t === 'LEAVER') {
         const L = D - ri(40, 90); last = L + ri(6, 35); status = 'İşdən çıxıb · son iş günü ' + fmtDay(L); mfa = r() < 0.5 ? 'Var' : 'Yox';
@@ -309,14 +309,14 @@ function generate(code) {
         calc.push({ id: 'c1', acc: id, q: p.user + ' hesabında son giriş son iş günündən neçə gün sonradır?', answer: last - L });
       }
       if (t === 'NONIT_ADMIN_NOMFA') { role = 'Admin'; mfa = 'Yox'; k = { tokens: ['Q2', 'Q4'], risk: ['Yüksək'], ev: ['Admin', dept, pos], why: dept + ' şöbəsinin işçisi Admin rolundadır (Q2) və MFA yoxdur (Q4).' }; }
-      if (t === 'NONIT_ADMIN_MFA') { role = 'Admin'; mfa = 'Var'; k = { tokens: ['Q2'], risk: ['Yüksək', 'Orta'], ev: ['Admin', dept, pos], why: dept + ' şöbəsinin işçisi Admin rolundadır (Q2). MFA var, ona görə Q4 pozulmur.' }; }
+      if (t === 'NONIT_ADMIN_MFA') { role = 'Admin'; mfa = 'Var'; k = { tokens: ['Q2'], risk: ['Yüksək'], ev: ['Admin', dept, pos], why: dept + ' şöbəsinin işçisi Admin rolundadır (Q2). MFA var, ona görə Q4 pozulmur.' }; }
       if (t === 'LEAVE') {
         const S = D - ri(100, 150); last = S - ri(1, 6); status = 'Uzunmüddətli məzuniyyət · ' + fmtDay(S) + '-dan';
         k = { tokens: ['Q5', 'EV'], risk: ['Orta'], ev: [fmtDay(S), fmtDay(last), 'status'], why: fmtDay(S) + '-dan məzuniyyətdədir, son giriş ' + fmtDay(last) + '. Cədvəldə hesab statusu yoxdur: dondurulma sübutu tələb olunur (Q5).' };
       }
-      if (t === 'INACTIVE') { last = D - ri(95, 240); k = { tokens: ['Q5'], risk: ['Orta', 'Aşağı'], ev: [fmtDay(last), String(D - last)], why: 'Aktiv işçidir, amma son girişdən ' + (D - last) + ' gün keçib (Q5: nəzərdən keçirmə, lazım deyilsə bağlama).' }; }
-      if (t === 'OK_USER') k = { tokens: ['OK'], risk: ['—', 'Aşağı'], ev: [], why: 'Aktiv işçi, adi istifadəçi, MFA var: pozuntu görünmür.' };
-      if (t === 'OK_USER_NOMFA') { mfa = 'Yox'; k = { tokens: ['OK'], risk: ['—', 'Aşağı'], ev: [], why: 'Adi istifadəçidir: Q4 yalnız Admin hesablarına aiddir, ona görə MFA-nın olmaması pozuntu deyil.' }; }
+      if (t === 'INACTIVE') { last = D - ri(95, 240); k = { tokens: ['Q5'], risk: ['Orta'], ev: [fmtDay(last), String(D - last)], why: 'Aktiv işçidir, amma son girişdən ' + (D - last) + ' gün keçib (Q5: nəzərdən keçirmə, lazım deyilsə bağlama).' }; }
+      if (t === 'OK_USER') k = { tokens: ['OK'], risk: ['—'], ev: [], why: 'Aktiv işçi, adi istifadəçi, MFA var: pozuntu görünmür.' };
+      if (t === 'OK_USER_NOMFA') { mfa = 'Yox'; k = { tokens: ['OK'], risk: ['—'], ev: [], why: 'Adi istifadəçidir: Q4 yalnız Admin hesablarına aiddir, ona görə MFA-nın olmaması pozuntu deyil.' }; }
       hrRow = { name: p.full, dept, pos, status };
       acc = { id, user: p.user, owner: p.full, role, mfa, last };
     }
