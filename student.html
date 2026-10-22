@@ -1,0 +1,372 @@
+<title>GRC Lab Səviyyə 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: an audit workpaper — sticky step bar, one task panel at a time, data tables always one tap away. */
+:root{
+  --bg:#F2F3EF; --surface:#FFFFFF; --sunk:#E8EAE4; --ink:#15222E; --muted:#56616B; --line:#D6D9D2;
+  --accent:#9E540B; --accent-bg:#FBEAD3; --blue:#2A62A0; --ok:#2E7647; --bad:#AE3520;
+  --f-sans:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif; --f-mono:'IBM Plex Mono', Consolas, 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0F1720; --surface:#17222D; --sunk:#111B24; --ink:#E7EBEE; --muted:#9BA8B3; --line:#2A3846; --accent:#F0B25B; --accent-bg:#3A2A14; --blue:#86B6E6; --ok:#74C493; --bad:#F2907C; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0F1720; --surface:#17222D; --sunk:#111B24; --ink:#E7EBEE; --muted:#9BA8B3; --line:#2A3846; --accent:#F0B25B; --accent-bg:#3A2A14; --blue:#86B6E6; --ok:#74C493; --bad:#F2907C; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-sans);font-size:16px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1040px;margin:0 auto;padding-block:20px 64px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:30px;font-weight:700} h2{font-size:22px;font-weight:600} h3{font-size:17px;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
+.brand{font-weight:700;font-size:15px} .brand span{color:var(--accent)}
+.who{font-size:14px;color:var(--muted)}
+.spacer{flex:1}
+.pill{font-size:13px;font-variant-numeric:tabular-nums;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted);background:var(--surface)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.notice{background:var(--accent-bg);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+label{font-size:14px;font-weight:600}
+input[type=text],input[type=number],select,textarea{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+textarea{min-height:88px;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.hint{font-size:13px;color:var(--muted)}
+.count{font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;font-weight:600}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.steps button{white-space:nowrap;font-size:14px;padding:7px 12px;font-weight:500;display:flex;gap:6px;align-items:center}
+.steps button[aria-current="step"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.steps .dot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.steps .dot.done{background:var(--ok)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--sunk);font-weight:600}
+tr:last-child td{border-bottom:none}
+.rules{display:grid;gap:8px}
+.rule{display:grid;grid-template-columns:44px 1fr;gap:10px;font-size:14px;align-items:baseline}
+.rule b{font-family:var(--f-mono);color:var(--accent)}
+.acc{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:16px;display:flex;flex-direction:column;gap:12px}
+.acc-head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}
+.acc-head .u{font-family:var(--f-mono);font-weight:600;font-size:16px}
+.kv{font-size:13px;color:var(--muted)} .kv b{color:var(--ink);font-weight:600}
+.tokens{display:flex;flex-wrap:wrap;gap:6px}
+.tok{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 8px;font-size:14px;cursor:pointer;user-select:none}
+.tok input{accent-color:var(--accent);margin:0}
+.tok:has(input:checked){background:var(--accent-bg);border-color:var(--accent)}
+.row{display:grid;grid-template-columns:160px 1fr;gap:12px}
+@media (max-width:560px){.row{grid-template-columns:1fr}}
+.codebox{font-family:var(--f-mono);font-size:12px;min-height:140px;word-break:break-all}
+.check{display:flex;gap:8px;align-items:center;font-size:15px}
+.check i{font-style:normal;font-weight:700;width:18px;text-align:center}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+.nav{display:flex;justify-content:space-between;gap:12px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.score{font-size:44px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.score small{font-size:16px;color:var(--muted);font-weight:500}
+.lines{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-size:15px;font-variant-numeric:tabular-nums;max-width:420px}
+td.wrap{white-space:normal;min-width:220px}
+.locked input[readonly]:not(#codeText),.locked textarea[readonly]:not(#codeText){background:var(--sunk);border-style:dashed}
+.locked .tok:has(input:disabled){cursor:default;opacity:1}
+.locked select:disabled{opacity:1;color:var(--ink)}
+.ans{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:10px}
+.ans:first-of-type{border-top:none;padding-top:0}
+.ans .txt{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--sunk);border-radius:8px;padding:10px 12px;font-size:15px}
+.err{color:var(--bad);font-size:14px}
+@media (prefers-reduced-motion:no-preference){.panel{animation:fade .18s ease-out}@keyframes fade{from{opacity:.4}to{opacity:1}}}
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">GRC Lab <span>· Səviyyə 1</span></div>
+    <div class="who" id="who"></div>
+    <div class="spacer"></div>
+    <div class="pill" id="timer" hidden>00:00</div>
+    <div class="pill" id="saved" hidden>Yadda saxlanılıb</div>
+  </div>
+
+  <!-- START -->
+  <section id="start" class="card" style="max-width:640px">
+    <p class="eyebrow">Praktik iş · Siyasət və giriş auditi</p>
+    <h1>İnformasiya təhlükəsizliyi siyasəti və hesab auditi</h1>
+    <p class="muted">Qrupunuzdakı hər kəs eyni şirkətin məlumatları ilə işləyir. Cavabları müstəqil və öz sözlərinizlə yazın: müəllim qrup daxilində oxşar mətnləri görür.</p>
+    <div class="notice">
+      <b>İş prosesi qeydə alınır</b>
+      <span>Müəllim cavablarla birlikdə bunları görəcək: hansı xanaya mətn yapışdırılıb (paste), yazmaya nə qədər vaxt gedib və səhifədən neçə dəfə çıxmısınız. Öz sözlərinizlə yazın.</span>
+    </div>
+    <form id="startForm" class="grid2" novalidate>
+      <div class="field"><label for="sName">Ad və soyad</label><input id="sName" type="text" autocomplete="name" required></div>
+      <div class="field"><label for="sCode">Tələbə kodu</label><input id="sCode" type="text" autocomplete="off" required placeholder="məs. 22-0417"><span class="hint">Müəllimin verdiyi şəxsi kodunuz.</span></div>
+      <div class="field"><label for="sGroup">Qrup</label><input id="sGroup" type="text" autocomplete="off" required placeholder="məs. ZS111"><span class="hint">Müəllimin dediyi kimi yazın: qrupdakı hər kəs eyni şirkət datası ilə işləyir.</span></div>
+      <div class="field" style="justify-content:end"><button class="primary" type="submit">Laboratoriyanı başlat</button></div>
+      <p class="err" id="startErr" hidden></p>
+    </form>
+  </section>
+
+  <!-- LAB -->
+  <section id="lab" hidden style="display:flex;flex-direction:column;gap:16px">
+    <nav class="steps" id="steps" aria-label="Mərhələlər"></nav>
+
+    <div class="panel" data-step="0">
+      <div class="card">
+        <p class="eyebrow">1 · Situasiya</p>
+        <h2 id="coName"></h2>
+        <p id="coText"></p>
+        <div class="notice"><span>Tapşırıq: əvvəlcə şirkət üçün 10 bölməli qısa siyasət yazın, sonra HR siyahısını sistem hesabları ilə tutuşdurub tapıntıları qeyd edin. Hər qərarı öz cədvəlinizdəki faktla əsaslandırın.</span></div>
+        <h3>Audit kriteriyaları</h3>
+        <div class="rules" id="rules1"></div>
+      </div>
+      <div class="card"><h3>HR siyahısı</h3><div class="tbl" id="hr1"></div></div>
+      <div class="card"><h3>Sistem hesabları</h3><p class="hint">Hesab statusu (aktiv/deaktiv) bu çıxarışda göstərilmir.</p><div class="tbl" id="acc1"></div></div>
+    </div>
+
+    <div class="panel" data-step="1">
+      <div class="card">
+        <p class="eyebrow">2 · Siyasət · 40 xal</p>
+        <h2>Şirkətiniz üçün siyasət yazın</h2>
+        <p class="muted">Hər bölmədə işçinin nə etməli və ya nə etməməli olduğunu aydın yazın. Texniki rəqəmləri (şifrə uzunluğu kimi) standarta saxlayın.</p>
+      </div>
+      <div id="policyBox" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+
+    <div class="panel" data-step="2">
+      <div class="card">
+        <p class="eyebrow">3 · Audit · 40 xal</p>
+        <h2>Hər hesab üçün qərar verin</h2>
+        <p class="muted">Pozulan qaydaları seçin. Pozuntu yoxdursa “Pozuntu yoxdur”. Status bilinmirsə “Sübut tələb olunur” əlavə edin. Faktda öz cədvəlinizdən tarix, rol və ya sahibi yazın.</p>
+        <details><summary style="cursor:pointer;font-weight:600">Kriteriyalar və HR siyahısı</summary><div style="display:flex;flex-direction:column;gap:12px;margin-top:12px"><div class="rules" id="rules2"></div><div class="tbl" id="hr2"></div></div></details>
+      </div>
+      <div id="auditBox" style="display:flex;flex-direction:column;gap:12px"></div>
+    </div>
+
+    <div class="panel" data-step="3">
+      <div class="card">
+        <p class="eyebrow">4 · Hesablama · 5 xal</p>
+        <h2>Öz datanız üzrə iki sual</h2>
+        <p class="muted">Cavabı gün sayı ilə yazın. Audit tarixi: 16.10.2026.</p>
+        <div id="calcBox" style="display:flex;flex-direction:column;gap:14px"></div>
+      </div>
+    </div>
+
+    <div class="panel" data-step="4">
+      <div class="card">
+        <p class="eyebrow">5 · Ən ciddi tapıntı · 15 xal</p>
+        <h2>Direktora beş hissəli tapıntı</h2>
+        <div class="field"><label for="worstAcc">Ən ciddi hesab hansıdır?</label><select id="worstAcc"></select></div>
+        <div id="worstBox" style="display:flex;flex-direction:column;gap:12px"></div>
+      </div>
+      <div class="card">
+        <h3>Qısa əks etdirmə</h3>
+        <div class="field"><label for="refl">Bu laboratoriyada ən çətin qərarınız hansı idi və niyə?</label><textarea id="refl" data-f="refl"></textarea></div>
+      </div>
+    </div>
+
+    <div class="panel" data-step="5">
+      <div class="card" id="submitCard">
+        <p class="eyebrow">6 · Təhvil</p>
+        <h2>İşi təhvil verin</h2>
+        <div id="checklist" style="display:flex;flex-direction:column;gap:6px"></div>
+        <p class="muted">Təhvildən sonra cavablar bağlanır və dəyişdirilə bilməz. Audit hissəsinin nəticəsini dərhal görəcəksiniz.</p>
+        <div class="btns" id="submitBtns"><button class="primary" id="submitBtn" type="button">Təhvil ver və nəticəni gör</button></div>
+        <div class="notice" id="confirmBox" hidden><b>Əminsiniz?</b><span>Təhvildən sonra heç bir cavabı dəyişə bilməyəcəksiniz.</span><div class="btns"><button class="primary" id="confirmYes" type="button">Bəli, təhvil ver</button><button id="confirmNo" type="button">Geri qayıt</button></div></div>
+        <p class="err" id="submitErr" hidden></p>
+      </div>
+      <div id="resultBox" hidden style="display:flex;flex-direction:column;gap:16px"></div>
+      <div class="card" id="codeOut" hidden>
+        <h3>Təhvil kodu</h3>
+        <label for="codeText">Bu kodu tam kopyalayıb müəllimin göstərdiyi kanala göndərin (e-poçt, Google Classroom və s.)</label>
+        <textarea id="codeText" class="codebox" readonly></textarea>
+        <div class="btns"><button id="copyCode" type="button">Kodu kopyala</button><span class="hint" id="copyMsg"></span></div>
+        <p class="hint">Müəllim yalnız ilk təhvilinizi qiymətləndirir.</p>
+      </div>
+    </div>
+
+    <div class="nav"><button id="prevBtn" type="button">← Geri</button><button id="nextBtn" class="primary" type="button">İrəli →</button></div>
+  </section>
+</div>
+
+<script>
+/*CORE*/
+</script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  const STEP_NAMES = ['Situasiya', 'Siyasət', 'Audit', 'Hesablama', 'Ən ciddi tapıntı', 'Təhvil'];
+  let G = null, ST = null, step = 0, saveTimer = null;
+  const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } } };
+
+  /* ---- telemetry ---- */
+  function tf(id) { return ST.tel.f[id] || (ST.tel.f[id] = { k: 0, p: 0, pc: 0, bulk: 0, ms: 0, e: 0, a: 0, z: 0, len: 0 }); }
+  function now() { return Date.now() - ST.started; }
+  function log(type, f, n) { if (ST.tel.log.length < 150) ST.tel.log.push([type, f || '', n || 0, Math.round(now() / 1000)]); }
+  let focusAt = 0, focusId = null, pasteMark = {};
+  document.addEventListener('focusin', e => { const f = e.target.dataset && e.target.dataset.f; if (ST && f) { focusId = f; focusAt = Date.now(); } });
+  document.addEventListener('focusout', e => { const f = e.target.dataset && e.target.dataset.f; if (ST && f && focusId === f) { tf(f).ms += Date.now() - focusAt; focusId = null; } });
+  document.addEventListener('paste', e => {
+    const el = e.target; const f = el.dataset && el.dataset.f; if (!ST || !f) return;
+    const txt = (e.clipboardData && e.clipboardData.getData('text')) || '';
+    const s = tf(f); s.p++; s.pc += txt.length; pasteMark[f] = true; log('p', f, txt.length);
+  });
+  document.addEventListener('drop', e => { const el = e.target; const f = el.dataset && el.dataset.f; if (!ST || !f) return; pasteMark[f] = true; const txt = (e.dataTransfer && e.dataTransfer.getData('text')) || ''; const s = tf(f); s.p++; s.pc += txt.length; log('d', f, txt.length); });
+  document.addEventListener('input', e => {
+    if (!ST) return;
+    const el = e.target; const f = el.dataset && el.dataset.f;
+    if (f) {
+      const s = tf(f); const it = e.inputType || ''; const len = (el.value || '').length; const delta = len - (s.len || 0);
+      s.e++; if (!s.a) s.a = now(); s.z = now();
+      if (it === 'insertFromPaste' || it === 'insertFromDrop' || pasteMark[f]) { pasteMark[f] = false; }
+      else if (it === 'insertText' || it === 'insertCompositionText' || it.startsWith('delete') || it === 'insertLineBreak') { s.k++; if (delta > 40) { s.bulk += delta; log('b', f, delta); } }
+      else if (delta > 20) { s.bulk += delta; log('b', f, delta); }
+      s.len = len;
+    }
+    scheduleSave();
+  });
+  document.addEventListener('change', () => { if (ST) scheduleSave(); });
+  let hiddenAt = 0, blurAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (!ST) return;
+    if (document.hidden) { hiddenAt = Date.now(); ST.tel.hidden++; }
+    else if (hiddenAt) { const d = Date.now() - hiddenAt; ST.tel.hiddenMs += d; log('h', '', Math.round(d / 1000)); hiddenAt = 0; scheduleSave(); }
+  });
+  window.addEventListener('blur', () => { if (ST) { blurAt = Date.now(); ST.tel.blur++; } });
+  window.addEventListener('focus', () => { if (ST && blurAt) { ST.tel.blurMs += Date.now() - blurAt; blurAt = 0; } });
+
+  /* ---- start ---- */
+  $('startForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const name = $('sName').value.trim(), code = normCode($('sCode').value), group = $('sGroup').value.trim();
+    const problems = [];
+    if (name.length < 2) problems.push('ad və soyadınızı yazın');
+    if (code.length < 1) problems.push('tələbə kodunu yazın');
+    if (normCode(group).length < 1) problems.push('qrupunuzu yazın');
+    if (problems.length) { $('startErr').textContent = 'Başlamaq üçün ' + problems.join(' və ') + '.'; $('startErr').hidden = false; return; }
+    G = generate(dataKey({ group, code }));
+    const saved = store.get('grclab:v1:' + code);
+    ST = saved && saved.seed === G.seed ? saved : { seed: G.seed, student: { name, code, group }, started: Date.now(), answers: {}, tel: { f: {}, log: [], hidden: 0, hiddenMs: 0, blur: 0, blurMs: 0 }, step: 0 };
+    ST.student.name = name; ST.student.group = group;
+    $('start').hidden = true; $('lab').hidden = false;
+    $('who').textContent = name + ' · ' + code;
+    $('timer').hidden = false;
+    build(); restore(); if (ST.locked) { lockUI(); showResults(); go(5); } else go(ST.step || 0); tick(); setInterval(tick, 1000);
+  });
+
+  function tick() { if (ST.locked) return; const s = Math.floor(now() / 1000); $('timer').textContent = pad2(Math.floor(s / 3600)) + ':' + pad2(Math.floor(s / 60) % 60) + ':' + pad2(s % 60); }
+
+  /* ---- build UI from the dataset ---- */
+  function hrTable() { return '<table><tr><th>Ad, soyad</th><th>Şöbə</th><th>Vəzifə</th><th>Status</th></tr>' + G.hr.map(h => '<tr><td>' + esc(h.name) + '</td><td>' + esc(h.dept) + '</td><td>' + esc(h.pos) + '</td><td>' + esc(h.status) + '</td></tr>').join('') + '</table>'; }
+  function accTable() { return '<table><tr><th>Hesab</th><th>Sahib</th><th>Rol</th><th>MFA</th><th>Son giriş</th></tr>' + G.accounts.map(a => '<tr><td class="mono">' + esc(a.user) + '</td><td>' + esc(a.owner) + '</td><td>' + esc(a.role) + '</td><td>' + esc(a.mfa) + '</td><td>' + fmtDay(a.last) + '</td></tr>').join('') + '</table>'; }
+  function rulesHtml() { return Object.entries(RULES).map(([k, v]) => '<div class="rule"><b>' + k + '</b><span>' + esc(v) + '</span></div>').join(''); }
+  function build() {
+    $('steps').innerHTML = STEP_NAMES.map((n, i) => '<button type="button" data-go="' + i + '"><span class="dot" id="dot' + i + '"></span>' + (i + 1) + '. ' + n + '</button>').join('');
+    $('steps').querySelectorAll('button').forEach(b => b.addEventListener('click', () => go(+b.dataset.go)));
+    $('coName').textContent = G.company;
+    $('coText').textContent = G.company + ' — ' + G.desc + '. Şirkətdə ' + G.staff + ' işçi var. Direktor sizdən informasiya təhlükəsizliyi siyasəti hazırlamağı və HR siyahısını sistem hesabları ilə müqayisə etməyi xahiş edir. Audit tarixi: 16.10.2026.';
+    $('rules1').innerHTML = rulesHtml(); $('rules2').innerHTML = rulesHtml();
+    $('hr1').innerHTML = hrTable(); $('hr2').innerHTML = hrTable(); $('acc1').innerHTML = accTable();
+    $('policyBox').innerHTML = POLICY.map((p, i) => '<div class="card"><div class="field"><label for="pol' + i + '">' + (i + 1) + '. ' + esc(p.t) + '</label><span class="hint">' + esc(p.h) + '</span><textarea id="pol' + i + '" data-f="p' + i + '"></textarea><span class="count" data-count="pol' + i + '"></span></div></div>').join('');
+    $('auditBox').innerHTML = G.accounts.map(a => '<div class="acc"><div class="acc-head"><span class="u">' + esc(a.user) + '</span><span class="kv">Sahib: <b>' + esc(a.owner) + '</b></span><span class="kv">Rol: <b>' + esc(a.role) + '</b></span><span class="kv">MFA: <b>' + esc(a.mfa) + '</b></span><span class="kv">Son giriş: <b>' + fmtDay(a.last) + '</b></span></div>' +
+      '<div class="tokens" role="group" aria-label="' + esc(a.user) + ' üçün qərar">' + TOKENS.map(t => '<label class="tok"><input type="checkbox" id="t_' + a.id + '_' + t + '" data-acc="' + a.id + '" data-tok="' + t + '">' + TOKEN_LABEL[t] + '</label>').join('') + '</div>' +
+      '<div class="row"><div class="field"><label for="r_' + a.id + '">Risk</label><select id="r_' + a.id + '">' + '<option value="">— seçin —</option>' + RISKS.map(r => '<option value="' + r + '">' + (r === '—' ? 'Risk yoxdur (—)' : r) + '</option>').join('') + '</select></div>' +
+      '<div class="field"><label for="fa_' + a.id + '">Fakt</label><input type="text" id="fa_' + a.id + '" data-f="f_' + a.id + '" placeholder="Tarix, rol, sahib: cədvəldə nə gördünüz?"></div></div></div>').join('');
+    $('auditBox').addEventListener('change', e => { const cb = e.target; if (!cb.dataset.tok) return; const id = cb.dataset.acc; if (cb.dataset.tok === 'OK' && cb.checked) TOKENS.forEach(t => { if (t !== 'OK') $('t_' + id + '_' + t).checked = false; }); else if (cb.checked) $('t_' + id + '_OK').checked = false; });
+    $('calcBox').innerHTML = G.calc.map((c, i) => '<div class="field"><label for="calc_' + c.id + '">' + (i + 1) + '. ' + esc(c.q) + '</label><input type="number" inputmode="numeric" id="calc_' + c.id + '" style="max-width:200px"></div>').join('');
+    $('worstAcc').innerHTML = '<option value="">— seçin —</option>' + G.accounts.map(a => '<option value="' + a.id + '">' + esc(a.user) + '</option>').join('');
+    $('worstBox').innerHTML = WORST_PARTS.map((w, i) => '<div class="field"><label for="wp' + i + '">' + w[0] + '</label><span class="hint">' + esc(w[1]) + '</span><textarea id="wp' + i + '" data-f="w' + i + '"></textarea></div>').join('');
+    document.querySelectorAll('textarea[data-f]').forEach(t => t.addEventListener('input', () => counts()));
+    $('prevBtn').addEventListener('click', () => go(step - 1));
+    $('nextBtn').addEventListener('click', () => go(step + 1));
+    $('submitBtn').addEventListener('click', () => { $('confirmBox').hidden = false; $('submitBtns').hidden = true; });
+    $('confirmNo').addEventListener('click', () => { $('confirmBox').hidden = true; $('submitBtns').hidden = false; });
+    $('confirmYes').addEventListener('click', submit);
+    $('copyCode').addEventListener('click', () => {
+      const t = $('codeText'); const ok = () => { $('copyMsg').textContent = 'Kopyalandı.'; }; const fallback = () => { t.focus(); t.select(); $('copyMsg').textContent = 'Mətn seçildi: Ctrl+C (və ya Kopyala) ilə kopyalayın.'; };
+      try { navigator.clipboard.writeText(t.value).then(ok, fallback); } catch (e) { fallback(); }
+    });
+  }
+
+  function collect() {
+    const A = { policy: POLICY.map((p, i) => $('pol' + i).value), audit: {}, calc: {}, worst: { acc: $('worstAcc').value, parts: WORST_PARTS.map((w, i) => $('wp' + i).value) }, reflection: $('refl').value };
+    G.accounts.forEach(a => { A.audit[a.id] = { tokens: TOKENS.filter(t => $('t_' + a.id + '_' + t).checked), risk: $('r_' + a.id).value, fact: $('fa_' + a.id).value }; });
+    G.calc.forEach(c => { A.calc[c.id] = $('calc_' + c.id).value; });
+    return A;
+  }
+  function restore() {
+    const A = ST.answers || {};
+    (A.policy || []).forEach((v, i) => { if ($('pol' + i)) $('pol' + i).value = v; });
+    Object.entries(A.audit || {}).forEach(([id, a]) => { (a.tokens || []).forEach(t => { const el = $('t_' + id + '_' + t); if (el) el.checked = true; }); if ($('r_' + id)) $('r_' + id).value = a.risk || ''; if ($('fa_' + id)) $('fa_' + id).value = a.fact || ''; });
+    Object.entries(A.calc || {}).forEach(([id, v]) => { if ($('calc_' + id)) $('calc_' + id).value = v; });
+    if (A.worst) { $('worstAcc').value = A.worst.acc || ''; (A.worst.parts || []).forEach((v, i) => { if ($('wp' + i)) $('wp' + i).value = v; }); }
+    $('refl').value = A.reflection || '';
+    document.querySelectorAll('[data-f]').forEach(el => { tf(el.dataset.f).len = el.value.length; });
+    counts(); dots();
+  }
+  function counts() { document.querySelectorAll('[data-count]').forEach(s => { const n = $(s.dataset.count).value.trim().length; s.textContent = n + ' simvol'; }); }
+  function done() {
+    const A = collect();
+    return [
+      true,
+      A.policy.filter(t => t.trim().length >= 25).length === 10,
+      G.accounts.every(a => A.audit[a.id].tokens.length),
+      G.calc.every(c => String(A.calc[c.id]).trim() !== ''),
+      !!A.worst.acc && A.worst.parts.every(t => t.trim().length >= 20),
+      false
+    ];
+  }
+  function dots() { const d = done(); d.forEach((v, i) => { const el = $('dot' + i); if (el) el.classList.toggle('done', v); }); }
+  function scheduleSave() { if (ST && ST.locked) return; clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
+  function save() { if (!ST) return; if (!ST.locked) ST.answers = collect(); ST.step = step; const ok = store.set('grclab:v1:' + ST.student.code, ST); $('saved').hidden = !ok; $('saved').textContent = ok ? 'Yadda saxlanılıb' : ''; dots(); }
+  function go(i) {
+    step = Math.max(0, Math.min(STEP_NAMES.length - 1, i));
+    document.querySelectorAll('.panel').forEach(p => { p.hidden = +p.dataset.step !== step; });
+    $('steps').querySelectorAll('button').forEach(b => { if (+b.dataset.go === step) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current'); });
+    $('prevBtn').disabled = step === 0; $('nextBtn').hidden = step === STEP_NAMES.length - 1;
+    if (step === 5) renderChecklist();
+    window.scrollTo({ top: 0 });
+    save();
+  }
+  function renderChecklist() {
+    const d = done(); const labels = ['', 'Siyasətin 10 bölməsi doldurulub', 'Bütün hesablar üçün qərar verilib', 'Hesablama sualları cavablanıb', 'Ən ciddi tapıntı 5 hissədə yazılıb'];
+    $('checklist').innerHTML = labels.map((l, i) => i === 0 ? '' : '<div class="check"><i class="' + (d[i] ? 'ok' : 'bad') + '">' + (d[i] ? '✓' : '!') + '</i><span>' + l + (d[i] ? '' : ' — tamamlanmayıb') + '</span></div>').join('');
+  }
+  function lockUI() {
+    document.querySelectorAll('#lab input, #lab textarea, #lab select').forEach(el => { if (el.id === 'codeText') return; if (el.type === 'checkbox' || el.tagName === 'SELECT') el.disabled = true; else el.readOnly = true; });
+    document.body.classList.add('locked');
+    $('submitCard').hidden = true; $('codeOut').hidden = false; $('codeText').value = ST.code || '';
+    $('timer').textContent = 'Təhvil verilib';
+  }
+  function showResults() {
+    const A = ST.final.answers || {}; const ans = (t, v) => '<div class="ans"><b>' + esc(t) + '</b><div class="txt">' + (esc(v) || '<span class="hint">boş</span>') + '</div></div>';
+    const gr = gradeAuto(ST.final, G); const tok = a => a.length ? a.map(t => TOKEN_LABEL[t]).join(', ') : '—';
+    const correct = G.accounts.filter(a => gr.accounts[a.id].score === 1).length;
+    $('resultBox').innerHTML =
+      '<div class="card"><p class="eyebrow">Nəticəniz</p><div style="display:flex;flex-wrap:wrap;gap:24px;align-items:end"><div><div class="score">' + gr.auto + ' <small>/ 45</small></div><p class="hint">Avtomatik yoxlanan hissə</p></div>' +
+      '<div class="lines"><span>Audit qərarları</span><b>' + gr.parts.codes + ' / 30</b><span>Risk dərəcələri</span><b>' + gr.parts.risk + ' / 5</b><span>Faktlar</span><b>' + gr.parts.facts + ' / 5</b><span>Hesablama</span><b>' + gr.parts.calc + ' / 5</b></div></div>' +
+      '<p>' + G.accounts.length + ' hesabdan <b>' + correct + '</b> hesabda qərarınız tam düzgündür. Siyasət (40 xal) və ən ciddi tapıntı (15 xal) müəllim tərəfindən qiymətləndiriləcək.</p></div>' +
+      '<div class="card"><h3>Hesablar üzrə izah</h3><div class="tbl"><table><tr><th>Hesab</th><th>Sizin qərar</th><th>Düzgün cavab</th><th>Sizin risk</th><th>Sizin fakt</th><th>İzah</th></tr>' +
+      G.accounts.map(a => { const r = gr.accounts[a.id], k = G.key[a.id]; const m = r.score === 1 ? '<b class="ok">✓</b> ' : (r.score > 0 ? '<b>≈</b> ' : '<b class="bad">✗</b> '); return '<tr><td class="mono">' + esc(a.user) + '</td><td>' + m + esc(tok(r.given)) + '</td><td>' + esc(tok(k.tokens)) + '</td><td>' + (r.riskOk ? '<b class="ok">✓</b> ' : '<b class="bad">✗</b> ') + esc(r.risk) + (r.riskOk ? '' : '<div class="hint">gözlənilən: ' + esc(k.risk.join(' / ')) + '</div>') + '</td><td class="wrap">' + esc(r.fact || '—') + '</td><td class="wrap">' + esc(k.why) + '</td></tr>'; }).join('') +
+      '</table></div><h3>Hesablama</h3>' + G.calc.map(c => { const r = gr.calc[c.id]; return '<p class="hint"><b class="' + (r.ok ? 'ok' : 'bad') + '">' + (r.ok ? '✓' : '✗') + '</b> ' + esc(c.q) + ' Sizin cavab: <b>' + (r.given ?? '—') + '</b>, düzgün: <b>' + c.answer + '</b></p>'; }).join('') + '</div>' +
+      '<div class="card"><h3>Sizin siyasətiniz</h3><p class="hint">Müəllim qiymətləndirəcək · 40 xal</p>' + POLICY.map((pp, i) => ans((i + 1) + '. ' + pp.t, (A.policy || [])[i])).join('') + '</div>' +
+      '<div class="card"><h3>Ən ciddi tapıntınız</h3><p class="hint">Seçdiyiniz hesab: <span class="mono">' + esc((G.accounts.find(a => a.id === (A.worst || {}).acc) || {}).user || '—') + '</span> · müəllim qiymətləndirəcək · 15 xal</p>' + WORST_PARTS.map((w, i) => ans(w[0], ((A.worst || {}).parts || [])[i])).join('') + ans('Əks etdirmə', A.reflection) + '</div>';
+    $('resultBox').hidden = false;
+  }
+  async function submit() {
+    if (focusId) { tf(focusId).ms += Date.now() - focusAt; focusAt = Date.now(); }
+    ST.answers = collect();
+    const pkg = { lab: LAB.id, v: LAB.v, student: ST.student, seed: ST.seed, started: 0, submitted: Date.now() - ST.started, startedAt: new Date(ST.started).toISOString(), answers: ST.answers, tel: ST.tel };
+    pkg.sig = signPkg(pkg);
+    $('confirmYes').disabled = true;
+    try {
+      const code = await encodePkg(pkg);
+      ST.locked = true; ST.final = pkg; ST.code = code; save();
+      lockUI(); showResults(); window.scrollTo({ top: 0 });
+    } catch (e) { $('submitErr').textContent = 'Kod yaradıla bilmədi. Brauzeri yeniləyib yenidən cəhd edin.'; $('submitErr').hidden = false; $('confirmYes').disabled = false; }
+  }
+})();
+</script>

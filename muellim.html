@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+</head>
+<body>
+<title>GRC Lab Müəllim Paneli</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: grading desk — intake strip, class roster as the summary, one student's case file below it. */
+:root{
+  --bg:#F2F3EF; --surface:#FFFFFF; --sunk:#E8EAE4; --ink:#15222E; --muted:#56616B; --line:#D6D9D2;
+  --accent:#9E540B; --accent-bg:#FBEAD3; --blue:#2A62A0; --blue-bg:#E1EBF6;
+  --ok:#2E7647; --ok-bg:#DDEFE2; --warn:#8A5D00; --warn-bg:#F7EBC9; --bad:#AE3520; --bad-bg:#F7DDD6;
+  --f-sans:'IBM Plex Sans', 'Segoe UI', Arial, sans-serif; --f-mono:'IBM Plex Mono', Consolas, 'Courier New', monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --bg:#0F1720; --surface:#17222D; --sunk:#111B24; --ink:#E7EBEE; --muted:#9BA8B3; --line:#2A3846; --accent:#F0B25B; --accent-bg:#3A2A14; --blue:#86B6E6; --blue-bg:#1C3046; --ok:#74C493; --ok-bg:#183326; --warn:#E8C463; --warn-bg:#3A3015; --bad:#F2907C; --bad-bg:#45211B; color-scheme:dark } }
+:root[data-theme="dark"]{ --bg:#0F1720; --surface:#17222D; --sunk:#111B24; --ink:#E7EBEE; --muted:#9BA8B3; --line:#2A3846; --accent:#F0B25B; --accent-bg:#3A2A14; --blue:#86B6E6; --blue-bg:#1C3046; --ok:#74C493; --ok-bg:#183326; --warn:#E8C463; --warn-bg:#3A3015; --bad:#F2907C; --bad-bg:#45211B; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-sans);font-size:15px;line-height:1.5;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;padding-block:24px 72px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{margin:0;line-height:1.2;text-wrap:balance} h1{font-size:28px} h2{font-size:20px;font-weight:600} h3{font-size:16px;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)} .mono{font-family:var(--f-mono)} .small{font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+textarea,input[type=text],input[type=number]{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+textarea{min-height:90px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible,tr[tabindex]:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+label{font-size:13px;font-weight:600}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;font-weight:600}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button.danger{color:var(--bad);border-color:var(--bad)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stats{display:flex;flex-wrap:wrap;gap:28px}
+.stat b{display:block;font-size:26px;font-variant-numeric:tabular-nums;line-height:1.1} .stat span{font-size:13px;color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--sunk);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr.sel td{background:var(--blue-bg)}
+tbody tr[tabindex]{cursor:pointer}
+tbody tr[tabindex]:hover td{background:var(--sunk)}
+.num{text-align:right;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.chip.low{background:var(--ok-bg);color:var(--ok)} .chip.med{background:var(--warn-bg);color:var(--warn)} .chip.high{background:var(--bad-bg);color:var(--bad)}
+.chip.info{background:var(--blue-bg);color:var(--blue)} .chip.demo{background:var(--sunk);color:var(--muted)}
+.sig{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.sig:first-child{border-top:none}
+.bar{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden} .bar i{display:block;height:100%;background:var(--blue)}
+.scoreline{display:grid;grid-template-columns:1fr 64px;gap:6px 12px;align-items:center;font-size:14px}
+.scoreline .num{font-weight:600}
+.total{font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.ans{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.ans:first-child{border-top:none;padding-top:0}
+.ans .txt{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--sunk);border-radius:8px;padding:10px 12px;font-size:14px}
+.tel{display:flex;flex-wrap:wrap;gap:6px}
+.ok{color:var(--ok)} .bad{color:var(--bad)}
+.empty{border:1px dashed var(--line);border-radius:10px;padding:28px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.note{background:var(--accent-bg);border-radius:10px;padding:12px 14px;font-size:14px}
+details summary{cursor:pointer;font-weight:600}
+.msg{font-size:14px}
+ol.q{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:6px">
+    <p class="eyebrow">GRC Lab · Səviyyə 1</p>
+    <h1>Müəllim paneli</h1>
+    <p class="muted">Eyni qrupdakı tələbələr eyni şirkət datası ilə işləyir. Tələbələr laboratoriyanı bitirəndə təhvil kodu alır. Kodları bura yapışdırın: sistem hər tələbənin öz datasını yenidən qurur, auditi cavab açarı ilə yoxlayır və iş prosesinin siqnallarını göstərir.</p>
+  </header>
+
+  <section class="card" aria-labelledby="inH">
+    <h2 id="inH">Təhvilləri əlavə et</h2>
+    <div class="cols">
+      <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+        <label for="codesIn">Bir və ya bir neçə təhvil kodu</label>
+        <textarea id="codesIn" class="mono small" placeholder="GRC1.…   (hər kodu yeni sətirdən və ya boşluqla ayırın)"></textarea>
+        <div class="btns"><button class="primary" id="addBtn" type="button">Əlavə et</button><label class="small" style="font-weight:500">və ya .txt fayl: <input type="file" id="fileIn" accept=".txt,text/plain" multiple></label></div>
+        <p class="msg" id="addMsg" aria-live="polite"></p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <h3>Tələbə laboratoriyası</h3>
+        <p class="small muted">Bu linki tələbələrə göndərin. Hər tələbə öz kodunu daxil edir və fərdi data alır.</p>
+        <div class="btns"><input type="text" id="labLink" readonly class="mono small" value="AUTO"><button type="button" id="copyLink">Kopyala</button></div>
+        <p class="small muted" id="dbState"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="rosterH">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:end">
+      <h2 id="rosterH">Sinif</h2>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div id="roster"></div>
+  </section>
+
+  <section id="detail" hidden style="display:flex;flex-direction:column;gap:20px"></section>
+
+  <section class="card" aria-labelledby="lbH">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:end">
+      <div style="display:flex;flex-direction:column;gap:4px"><h2 id="lbH">Ümumi nəticələr</h2><p class="small muted">Bütün tələbələr bala görə sıralanıb. Bu cədvəli yalnız siz görürsünüz; tələbə təhvildən sonra yalnız öz nəticəsini görür.</p></div>
+      <div class="btns small"><label for="lbGroup" style="font-weight:500">Qrup:</label><select id="lbGroup" style="font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"><option value="">Hamısı</option></select></div>
+    </div>
+    <div id="lbPreview"></div>
+    <p class="msg small muted" id="lbMsg"></p>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Cavab açarına bax (qrup üzrə)</summary>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+        <div class="btns"><input type="text" id="keyCode" placeholder="Qrup adı, məs. ZS111" style="max-width:240px"><button type="button" id="keyBtn">Göstər</button></div>
+        <div id="keyOut"></div>
+      </div>
+    </details>
+    <details>
+      <summary>Ehtiyat nüsxə (bütün təhvillər və qiymətlər)</summary>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <p class="small muted">Panel məlumatı bu brauzerdə saxlayır. Başqa kompüterə keçəndə və ya brauzeri təmizləməzdən əvvəl ehtiyat nüsxəni kopyalayıb saxlayın, sonra buraya yapışdırıb bərpa edin.</p>
+        <textarea id="bkText" class="mono small" placeholder="Ehtiyat nüsxə burada görünəcək və ya bərpa üçün buraya yapışdırın"></textarea>
+        <div class="btns"><button type="button" id="bkMake">Ehtiyat nüsxəni göstər</button><button type="button" id="bkCopy">Kopyala</button><button type="button" id="bkRestore">Bərpa et</button><span class="small muted" id="bkMsg"></span></div>
+      </div>
+    </details>
+    <details>
+      <summary>Qiymətləri CSV kimi götür</summary>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <textarea id="csvOut" class="mono small" readonly></textarea>
+        <div class="btns"><button type="button" id="copyCsv">CSV-ni kopyala</button><span class="small muted" id="csvMsg"></span></div>
+      </div>
+    </details>
+  </section>
+</div>
+
+<script>
+/* ===== GRC Lab core: shared by the student lab and the teacher panel ===== */
+const LAB = { id: 'GRC-L1', v: 1, salt: 'grc-lab-l1-7f3a' };
+
+function dayNum(y, m, d) { return Math.round(Date.UTC(y, m - 1, d) / 86400000); }
+const AUDIT_DAY = dayNum(2026, 10, 16);
+function pad2(x) { return String(x).padStart(2, '0'); }
+function fmtDay(n) { const d = new Date(n * 86400000); return pad2(d.getUTCDate()) + '.' + pad2(d.getUTCMonth() + 1) + '.' + d.getUTCFullYear(); }
+
+function hash32(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) { const ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (h2 >>> 0).toString(16).padStart(8, '0') + (h1 >>> 0).toString(16).padStart(8, '0');
+}
+function rngFrom(seedHex) {
+  let a = parseInt(seedHex.slice(0, 8), 16) >>> 0;
+  return function () { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+/* Data is shared by everyone in the same group; the student code identifies the person. */
+function dataKey(student) { return normCode((student && (student.group || student.code)) || ''); }
+function normCode(c) { return String(c || '').normalize('NFC').trim().toUpperCase().replace(/\s+/g, ''); }
+
+const AZ_TR = { 'ə': 'a', 'ı': 'i', 'ş': 's', 'ç': 'c', 'ğ': 'g', 'ö': 'o', 'ü': 'u', 'i̇': 'i' };
+function translit(s) { return s.toLocaleLowerCase('az').split('').map(ch => AZ_TR[ch] ?? ch).join('').replace(/[^a-z]/g, ''); }
+
+const NAMES_M = ['Tural', 'Orxan', 'Elnur', 'Fərid', 'Rəşad', 'Vüsal', 'Səbuhi', 'Ceyhun', 'Anar', 'Murad', 'Emin', 'Toğrul', 'Nihad', 'Ramil', 'Kənan', 'Samir', 'Zaur', 'Elçin'];
+const NAMES_F = ['Aynur', 'Günay', 'Səbinə', 'Aysel', 'Lalə', 'Nərmin', 'Fidan', 'Ülviyyə', 'Könül', 'Şəbnəm', 'Röya', 'Aytən', 'Nuray', 'Səidə', 'Gülnar', 'Arzu', 'Türkan', 'Xədicə'];
+const SURNAMES = ['Rzayev', 'Hüseynov', 'Kərimov', 'Abbasov', 'Cəfərov', 'Sadıqov', 'Əhmədov', 'Rəhimov', 'Zeynalov', 'Bağırov', 'Nəbiyev', 'Orucov', 'Səfərov', 'Mustafayev', 'Novruzov', 'Hacıyev', 'Vəliyev', 'Paşayev', 'Qasımov', 'Şükürov', 'Tağıyev', 'Musayev', 'Salmanov', 'Yusifov'];
+const COMPANIES = [
+  ['XəzərMarket MMC', 'onlayn ərzaq mağazası'], ['Gəncə Tekstil MMC', 'parça və geyim satışı'], ['Şəki İpək MMC', 'ipək məmulatı mağazası'],
+  ['Lənkəran Aqro MMC', 'kənd təsərrüfatı məhsulları satışı'], ['Sumqayıt Logistika MMC', 'kiçik çatdırılma xidməti'], ['Qəbələ Tur MMC', 'turizm agentliyi'],
+  ['Abşeron Optika MMC', 'optika salonu'], ['Nizami Kitab MMC', 'kitab mağazası'], ['Quba Meyvə MMC', 'meyvə-tərəvəz topdan satışı'], ['Mingəçevir Elektrik MMC', 'məişət texnikası mağazası']
+];
+const NONIT_POS = [['Satış', 'Satış meneceri'], ['Mühasibat', 'Mühasib'], ['Marketinq', 'Marketinq mütəxəssisi'], ['Kassa', 'Kassir'], ['Anbar', 'Anbar müdiri'], ['Müştəri xidməti', 'Operator'], ['Kadrlar', 'HR mütəxəssisi']];
+const SHARED_USERS = ['kassa_ortaq', 'satis_ortaq', 'depo_ortaq', 'ofis_ortaq'];
+const TEST_USERS = ['demo_admin', 'temp_admin', 'qa_test', 'test_admin'];
+
+const TOKENS = ['OK', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'EV'];
+const TOKEN_LABEL = { OK: 'Pozuntu yoxdur', Q1: 'Q1', Q2: 'Q2', Q3: 'Q3', Q4: 'Q4', Q5: 'Q5', EV: 'Sübut tələb olunur' };
+const RULES = {
+  Q1: 'İşdən çıxan işçinin hesabı son iş günü bağlanmalıdır.',
+  Q2: 'Admin rolu yalnız IT istiqamətli işçilərə verilir.',
+  Q3: 'Hər hesab konkret şəxsə aid olmalıdır; ortaq hesab qadağandır.',
+  Q4: 'Admin hesablarında MFA məcburidir.',
+  Q5: '90 gündən çox istifadə olunmayan hesab yoxlanmalı, lazım deyilsə bağlanmalıdır; uzunmüddətli məzuniyyətdə hesab dondurulur.'
+};
+const RISKS = ['Yüksək', 'Orta', 'Aşağı', '—'];
+
+/* Build one student's unique dataset + answer key from their code. */
+function generate(code) {
+  const nc = normCode(code);
+  const seed = hash32(LAB.id + '|' + nc);
+  const r = rngFrom(seed);
+  const ri = (a, b) => a + Math.floor(r() * (b - a + 1));
+  const pick = arr => arr[Math.floor(r() * arr.length)];
+  const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const usedFull = new Set(), usedUser = new Set();
+  function person() {
+    for (let tries = 0; tries < 50; tries++) {
+      const female = r() < 0.5;
+      const first = pick(female ? NAMES_F : NAMES_M);
+      const base = pick(SURNAMES);
+      if (usedFull.has('s:' + base)) continue;
+      const sur = base + (female ? 'a' : '');
+      const full = first + ' ' + sur;
+      if (usedFull.has(full)) continue;
+      usedFull.add('s:' + base);
+      let user = translit(first)[0] + '.' + translit(sur);
+      if (usedUser.has(user)) user = translit(first).slice(0, 2) + '.' + translit(sur);
+      if (usedUser.has(user)) continue;
+      usedFull.add(full); usedUser.add(user);
+      return { full, user };
+    }
+    throw new Error('name pool');
+  }
+  const [company, desc] = pick(COMPANIES);
+  const D = AUDIT_DAY;
+  const templates = ['OK_ADMIN', 'LEAVER', 'IT_NOMFA', pick(['NONIT_ADMIN_NOMFA', 'NONIT_ADMIN_MFA']), 'LEAVE', 'SHARED', 'TEST', 'OK_USER', 'OK_USER_NOMFA'];
+  if (r() < 0.6) templates.push('INACTIVE');
+  const hr = [], accounts = [], key = {}, calc = [];
+  let n = 0;
+  for (const t of shuffle(templates)) {
+    const id = 'a' + (++n);
+    let acc, hrRow = null, k;
+    if (t === 'SHARED' || t === 'TEST') {
+      const user = t === 'SHARED' ? pick(SHARED_USERS) : pick(TEST_USERS);
+      const last = t === 'SHARED' ? D - ri(0, 6) : D - ri(200, 700);
+      acc = { id, user, owner: '—', role: t === 'TEST' ? 'Admin' : 'İstifadəçi', mfa: 'Yox', last };
+      if (t === 'SHARED') k = { tokens: ['Q3'], risk: ['Yüksək', 'Orta'], ev: ['sahib', 'ortaq', user], why: 'Sahibi göstərilmir və ad hesabın ortaq olduğunu göstərir (Q3). Hesab Admin olmadığı üçün MFA-nın olmaması Q4 deyil.' };
+      else {
+        k = { tokens: ['Q3', 'Q4', 'Q5'], risk: ['Yüksək'], ev: [fmtDay(last), 'sahib', String(D - last)], why: 'Sahibsiz (Q3) Admin hesabıdır, MFA yoxdur (Q4), son girişdən ' + (D - last) + ' gün keçib (Q5 üzrə nəzərdən keçirmə).' };
+        calc.push({ id: 'c2', acc: id, q: user + ' hesabının son girişindən audit tarixinə (16.10.2026) neçə gün keçib?', answer: D - last });
+      }
+    } else {
+      const p = person();
+      let dept, pos, status = 'Aktiv', role = 'İstifadəçi', mfa = 'Var', last = D - ri(0, 12);
+      if (t === 'OK_ADMIN' || t === 'IT_NOMFA') { dept = 'IT'; pos = t === 'OK_ADMIN' ? 'Sistem administratoru' : 'IT mütəxəssisi'; role = 'Admin'; mfa = t === 'OK_ADMIN' ? 'Var' : 'Yox'; }
+      else { [dept, pos] = pick(NONIT_POS); }
+      if (t === 'OK_ADMIN') k = { tokens: ['OK'], risk: ['—', 'Aşağı'], ev: [], why: 'IT işçisidir, Admin, MFA var, son giriş yaxındır: verilən sübutda pozuntu görünmür.' };
+      if (t === 'IT_NOMFA') k = { tokens: ['Q4'], risk: ['Yüksək'], ev: ['MFA'], why: 'IT işçisi olduğu üçün Admin rolu Q2-yə uyğundur, amma Admin hesabında MFA yoxdur (Q4).' };
+      if (t === 'LEAVER') {
+        const L = D - ri(40, 90); last = L + ri(6, 35); status = 'İşdən çıxıb · son iş günü ' + fmtDay(L); mfa = r() < 0.5 ? 'Var' : 'Yox';
+        k = { tokens: ['Q1'], risk: ['Yüksək'], ev: [fmtDay(L), fmtDay(last), String(last - L)], why: 'Son iş günü ' + fmtDay(L) + ', son giriş ' + fmtDay(last) + ': ' + (last - L) + ' gün sonra (Q1).' };
+        calc.push({ id: 'c1', acc: id, q: p.user + ' hesabında son giriş son iş günündən neçə gün sonradır?', answer: last - L });
+      }
+      if (t === 'NONIT_ADMIN_NOMFA') { role = 'Admin'; mfa = 'Yox'; k = { tokens: ['Q2', 'Q4'], risk: ['Yüksək'], ev: ['Admin', dept, pos], why: dept + ' şöbəsinin işçisi Admin rolundadır (Q2) və MFA yoxdur (Q4).' }; }
+      if (t === 'NONIT_ADMIN_MFA') { role = 'Admin'; mfa = 'Var'; k = { tokens: ['Q2'], risk: ['Yüksək', 'Orta'], ev: ['Admin', dept, pos], why: dept + ' şöbəsinin işçisi Admin rolundadır (Q2). MFA var, ona görə Q4 pozulmur.' }; }
+      if (t === 'LEAVE') {
+        const S = D - ri(100, 150); last = S - ri(1, 6); status = 'Uzunmüddətli məzuniyyət · ' + fmtDay(S) + '-dan';
+        k = { tokens: ['Q5', 'EV'], risk: ['Orta'], ev: [fmtDay(S), fmtDay(last), 'status'], why: fmtDay(S) + '-dan məzuniyyətdədir, son giriş ' + fmtDay(last) + '. Cədvəldə hesab statusu yoxdur: dondurulma sübutu tələb olunur (Q5).' };
+      }
+      if (t === 'INACTIVE') { last = D - ri(95, 240); k = { tokens: ['Q5'], risk: ['Orta', 'Aşağı'], ev: [fmtDay(last), String(D - last)], why: 'Aktiv işçidir, amma son girişdən ' + (D - last) + ' gün keçib (Q5: nəzərdən keçirmə, lazım deyilsə bağlama).' }; }
+      if (t === 'OK_USER') k = { tokens: ['OK'], risk: ['—', 'Aşağı'], ev: [], why: 'Aktiv işçi, adi istifadəçi, MFA var: pozuntu görünmür.' };
+      if (t === 'OK_USER_NOMFA') { mfa = 'Yox'; k = { tokens: ['OK'], risk: ['—', 'Aşağı'], ev: [], why: 'Adi istifadəçidir: Q4 yalnız Admin hesablarına aiddir, ona görə MFA-nın olmaması pozuntu deyil.' }; }
+      hrRow = { name: p.full, dept, pos, status };
+      acc = { id, user: p.user, owner: p.full, role, mfa, last };
+    }
+    k.type = t; key[id] = k;
+    accounts.push(acc); if (hrRow) hr.push(hrRow);
+  }
+  // Two extra HR-only people (no system account) make the matching less mechanical.
+  for (let i = 0; i < 2; i++) { const p = person(); const [dept, pos] = pick(NONIT_POS); hr.push({ name: p.full, dept, pos, status: 'Aktiv' }); }
+  const hrSorted = hr.slice().sort((a, b) => a.name.localeCompare(b.name, 'az'));
+  calc.sort((a, b) => a.id.localeCompare(b.id));
+  const datasetText = [company, ...hr.map(h => [h.name, h.dept, h.pos, h.status].join(' ')), ...accounts.map(a => [a.user, a.owner, a.role, a.mfa, fmtDay(a.last)].join(' '))].join(' ').toLocaleLowerCase('az');
+  return { code: nc, seed, company, desc, staff: hr.length, auditDay: D, hr: hrSorted, accounts, key, calc, datasetText };
+}
+
+/* ---------- Policy section definitions ---------- */
+const POLICY = [
+  { t: 'Məqsəd', h: 'Siyasət nəyi, nədən qoruyur?', kw: ['qoru', 'məlumat', 'icazəsiz'] },
+  { t: 'Kimlərə aiddir', h: 'Hansı şəxslər bu qaydalara əməl etməlidir?', kw: ['işçi', 'üçüncü', 'podrat', 'müvəqqəti', 'bütün', 'hamı'] },
+  { t: 'Şifrələr və sistemə giriş', h: 'Hesablar, şifrələr və admin girişi üçün qaydalar.', kw: ['mfa', 'fərdi', 'paylaş', 'çoxfaktor', 'ortaq'] },
+  { t: 'Müştəri məlumatı', h: 'Kim baxa bilər, hara göndərmək olmaz?', kw: ['şəxsi', 'whatsapp', 'e-poçt', 'telefon', 'qadağan', 'təsdiqlənmiş'] },
+  { t: 'Cihazlar', h: 'Noutbuk, telefon və yaddaş daşıyıcıları.', kw: ['kilid', 'itki', 'itər', 'itmə', 'oğurl'] },
+  { t: 'Təhlükəsizlik hadisələrinin bildirilməsi', h: 'Nə, kimə və nə qədər vaxtda bildirilir?', kw: ['bildir', 'saat', 'dərhal'] },
+  { t: 'İşə qəbul, vəzifə dəyişikliyi və işdən ayrılma', h: 'HR və IT arasında hesab prosesi.', kw: ['son iş gün', 'bağlan', 'hr', 'dondur'] },
+  { t: 'Məsuliyyətlər', h: 'Direktor, IT, HR və işçilərin rolu.', kw: ['direktor', 'it', 'hr', 'işçi'] },
+  { t: 'Qayda pozuntuları', h: 'Pozuntu olduqda nə baş verir?', kw: ['araşdır', 'tədbir', 'məhdud'] },
+  { t: 'Təsdiq və yenilənmə', h: 'Kim təsdiqləyir, nə vaxt yenilənir?', kw: ['təsdiq', 'ild', 'yenilə'] }
+];
+/* The lesson's model policy text: used only to detect copying from the lesson. */
+const MODEL_POLICY = [
+  'Bu siyasətin məqsədi BakuShop MMC-nin müştəri məlumatlarını (ad, telefon, ünvan), şirkət məlumatlarını və informasiya sistemlərini icazəsiz girişdən, açıqlanmadan, dəyişdirilmədən, itirilmədən və istifadənin pozulmasından qorumaqdır.',
+  'Siyasət direktor da daxil olmaqla bütün daimi və müvəqqəti işçilərə, həmçinin BakuShop-un məlumatlarına və ya sistemlərinə giriş verilmiş podratçılara, xidmət təminatçılarına və digər üçüncü tərəflərə aiddir. Hər kəs bu tələblərə əməl etməlidir.',
+  'Hər istifadəçi yalnız özünə aid fərdi hesabdan istifadə etməlidir. Şifrəni və giriş məlumatlarını başqa şəxsə vermək, başqasının hesabından istifadə etmək və ortaq hesab yaratmaq qadağandır. Giriş hüquqları yalnız iş üçün lazım olan həddə verilməlidir. Administrator hesablarında çoxfaktorlu autentifikasiya (MFA) məcburidir.',
+  'Müştəri məlumatlarına yalnız iş vəzifəsi üçün ehtiyacı olan şəxslər baxa bilər. Müştəri siyahısını şəxsi telefona, şəxsi e-poçta, şəxsi bulud yaddaşına və ya təsdiqlənməmiş WhatsApp və digər mesajlaşma hesablarına göndərmək qadağandır. Məlumat yalnız şirkətin təsdiqlənmiş sistemləri və kanalları vasitəsilə paylaşılmalıdır.',
+  'İşçi noutbuk, telefon və digər cihazı nəzarətsiz qoyduqda ekranı kilidləməlidir. Cihazın itməsi, oğurlanması və ya başqa şəxsin istifadəsinə keçməsi barədə IT-yə dərhal məlumat verilməlidir. Şirkət məlumatları təsdiqlənməmiş cihazlarda və yaddaş daşıyıcılarında saxlanmamalıdır.',
+  'Şübhəli e-poçt, itirilmiş cihaz, səhvən göndərilmiş fayl, icazəsiz giriş və ya məlumat sızması şübhəsi aşkar edən hər bir işçi hadisəni dərhal, ən gec 1 saat ərzində IT-yə və ya təyin edilmiş məsul şəxsə bildirməlidir. İşçi hadisəni gizlətməməli, sübutları özbaşına silməməli və araşdırmaya mane olmamalıdır.',
+  'HR yeni işçi, vəzifə dəyişikliyi, uzunmüddətli məzuniyyət və işdən ayrılma barədə IT-yə vaxtında, yazılı məlumat verməlidir. IT giriş hüquqlarını vəzifəyə uyğunlaşdırmalıdır. İşdən ayrılan şəxsin hesabı son iş günü bağlanmalıdır. Uzunmüddətli məzuniyyətdə olan şəxsin hesabı məzuniyyət dövründə dondurulmalıdır.',
+  'Direktor siyasəti təsdiqləyir və onun icrası üçün lazımi resursları təmin edir. IT istifadəçi hesablarını yaradır, dəyişir və bağlayır, administrator girişlərinə MFA tətbiq edir və giriş hüquqlarını nəzərdən keçirir. HR işçilərin statusundakı dəyişiklikləri IT-yə bildirir. Hər bir işçi siyasətə əməl edir, giriş məlumatlarını qoruyur və şübhəli hadisələri vaxtında bildirir.',
+  'Siyasət pozuntuları araşdırılmalıdır. Risk olduqda müvafiq giriş müvəqqəti məhdudlaşdırıla bilər. Pozuntuya uyğun tədbirlər şirkətin daxili qaydalarına, əmək münasibətlərinə və tətbiq olunan qanunvericiliyə uyğun görülməlidir.',
+  'Siyasət direktor tərəfindən təsdiq edilir. Siyasət ən azı ildə bir dəfə, həmçinin ciddi təhlükəsizlik hadisəsi, sistem dəyişikliyi və ya iş prosesində əhəmiyyətli dəyişiklik baş verdikdə nəzərdən keçirilməlidir. Yenilənmiş versiya işçilərə çatdırılmalı və onların tanış olması qeydə alınmalıdır.'
+];
+const WORST_PARTS = [['Qayda', 'Hansı qayda pozulub? Kodunu yazın.'], ['Fakt', 'Öz cədvəlinizdən tarix, hesab və rol.'], ['Səbəb', 'Ehtimal olunan səbəb; sübut yoxdursa bunu qeyd edin.'], ['Nəticə', 'Şirkət və məlumat üçün risk.'], ['Tövsiyə', 'Konkret tədbir və məsul tərəf.']];
+const LESSON_TOKENS = ['bakushop', 'leyla', 'həsənova', 'l.hasanova', 'kamran', 'k.guliyev', 'rauf', 'r.aliyev', 'nigar', 'babayeva', 'n.babayeva', 'anbar_ortaq', 'test_user', 'e.mammadov', 'o.nasirov', 't.ismayilov', '20.09.2026', '12.08.2026', '03.02.2025', '30.05.2026', '01.06.2026', '620 gün', '39 gün'];
+
+/* ---------- Text helpers ---------- */
+function lc(s) { return String(s || '').toLocaleLowerCase('az'); }
+function words(s) { return lc(s).replace(/[^\p{L}\p{N}.]+/gu, ' ').trim().split(/\s+/).filter(Boolean); }
+function shingles(s, k = 3) { const w = words(s); const out = new Set(); for (let i = 0; i + k <= w.length; i++) out.add(w.slice(i, i + k).join(' ')); return out; }
+function jaccard(a, b) { if (!a.size || !b.size) return 0; let i = 0; for (const x of a) if (b.has(x)) i++; return i / (a.size + b.size - i); }
+function containment(a, ref) { if (!a.size) return 0; let i = 0; for (const x of a) if (ref.has(x)) i++; return i / a.size; }
+
+/* ---------- Grading ---------- */
+function gradeAuto(pkg, gen) {
+  const A = pkg.answers || {};
+  const out = { accounts: {}, parts: {} };
+  let codeSum = 0, riskSum = 0, riskN = 0, factSum = 0, factN = 0;
+  for (const acc of gen.accounts) {
+    const k = gen.key[acc.id]; const a = (A.audit || {})[acc.id] || {};
+    const S = new Set(a.tokens || []), E = new Set(k.tokens);
+    let inter = 0; for (const x of S) if (E.has(x)) inter++;
+    const uni = new Set([...S, ...E]).size;
+    let sc = uni ? inter / uni : 0;
+    if (E.has('OK')) sc = (S.size === 1 && S.has('OK')) ? 1 : 0;
+    codeSum += sc;
+    const riskOk = !!a.risk && k.risk.includes(a.risk); riskSum += riskOk ? 1 : 0; riskN++;
+    let factOk = null;
+    if (!E.has('OK')) { const f = lc(a.fact); factOk = f.length >= 15 && k.ev.some(e => f.includes(lc(e))); factSum += factOk ? 1 : 0; factN++; }
+    out.accounts[acc.id] = { score: sc, riskOk, factOk, given: [...S], risk: a.risk || 'seçilməyib', fact: a.fact || '' };
+  }
+  const nAcc = gen.accounts.length;
+  out.parts.codes = Math.round(codeSum / nAcc * 30 * 10) / 10;
+  out.parts.risk = Math.round(riskSum / riskN * 5 * 10) / 10;
+  out.parts.facts = factN ? Math.round(factSum / factN * 5 * 10) / 10 : 5;
+  let calc = 0; out.calc = {};
+  for (const c of gen.calc) { const v = parseInt(String((A.calc || {})[c.id] ?? '').replace(/[^\d-]/g, ''), 10); const ok = v === c.answer; out.calc[c.id] = { given: Number.isFinite(v) ? v : null, ok }; if (ok) calc += 5 / gen.calc.length; }
+  out.parts.calc = Math.round(calc * 10) / 10;
+  out.auto = Math.round((out.parts.codes + out.parts.risk + out.parts.facts + out.parts.calc) * 10) / 10; // of 45
+  // Suggestions for the teacher-graded parts
+  let pol = 0; out.policy = [];
+  POLICY.forEach((p, i) => { const t = lc((A.policy || [])[i]); const len = t.length >= 60 ? 2 : (t.length >= 25 ? 1 : 0); const hits = p.kw.filter(k => t.includes(k)).length; const kw = hits >= 2 ? 2 : hits; out.policy.push({ len, kw, pts: len + kw }); pol += len + kw; });
+  out.suggestPolicy = pol; // of 40
+  const W = A.worst || {}; let w = 0; const wk = gen.key[W.acc];
+  if (wk && wk.risk.includes('Yüksək')) w += 3;
+  (W.parts || []).forEach(t => { if (lc(t).length >= 40) w += 1; });
+  const parts = W.parts || [];
+  if (wk && wk.tokens.some(t => t !== 'EV' && t !== 'OK' && lc(parts[0]).includes(lc(t)))) w += 2;
+  if (wk && wk.ev.some(e => lc(parts[1]).includes(lc(e)))) w += 3;
+  if (/ehtimal|araşdır|sübut/.test(lc(parts[2]))) w += 1;
+  if (/\bit\b|it-|hr|direktor/.test(lc(parts[4]))) w += 1;
+  out.suggestWorst = Math.min(15, w); // of 15
+  return out;
+}
+
+/* ---------- Process (integrity) signals ---------- */
+function textFields(pkg, gen) {
+  const A = pkg.answers || {}; const f = [];
+  POLICY.forEach((p, i) => f.push({ id: 'p' + i, label: 'Siyasət · ' + p.t, text: (A.policy || [])[i] || '' }));
+  gen.accounts.forEach(acc => f.push({ id: 'f_' + acc.id, label: 'Fakt · ' + acc.user, text: ((A.audit || {})[acc.id] || {}).fact || '' }));
+  WORST_PARTS.forEach((w, i) => f.push({ id: 'w' + i, label: 'Ən ciddi tapıntı · ' + w[0], text: ((A.worst || {}).parts || [])[i] || '' }));
+  f.push({ id: 'refl', label: 'Əks etdirmə', text: A.reflection || '' });
+  return f;
+}
+function computeSignals(pkg, gen, others) {
+  const T = pkg.tel || { f: {} }; const S = [];
+  const fields = textFields(pkg, gen);
+  let total = 0, pasted = 0; const bigPaste = [], fastFields = [];
+  for (const fd of fields) {
+    const t = T.f[fd.id] || {}; const len = fd.text.length; total += len;
+    const pc = Math.min(t.pc || 0, len); pasted += pc;
+    if ((t.pc || 0) >= 120) bigPaste.push(fd.label + ' (' + t.pc + ' simvol)');
+    const mins = (t.ms || 0) / 60000;
+    if (len >= 150 && !(t.pc) && mins > 0 && len / mins > 450) fastFields.push(fd.label);
+    if (len >= 150 && !(t.pc) && (t.k || 0) < len * 0.25) fastFields.push(fd.label + ' (az klaviatura hərəkəti)');
+    if ((t.bulk || 0) >= 80) bigPaste.push(fd.label + ' (birdən ' + t.bulk + ' simvol daxil olub)');
+  }
+  const ratio = total ? pasted / total : 0;
+  if (ratio >= 0.3) S.push({ lv: 'high', t: 'Mətnin ' + Math.round(ratio * 100) + '%-i yapışdırılıb', d: 'Cavab mətnlərinin böyük hissəsi klaviatura ilə yazılmayıb, başqa yerdən köçürülüb.' });
+  else if (ratio >= 0.1) S.push({ lv: 'med', t: 'Mətnin ' + Math.round(ratio * 100) + '%-i yapışdırılıb', d: 'Bəzi hissələr başqa yerdən köçürülüb.' });
+  if (bigPaste.length) S.push({ lv: bigPaste.length >= 3 ? 'high' : 'med', t: 'Böyük yapışdırmalar: ' + bigPaste.length, d: bigPaste.slice(0, 6).join('; ') });
+  const fastU = [...new Set(fastFields)];
+  if (fastU.length) S.push({ lv: 'med', t: 'Qeyri-adi sürətlə daxil edilmiş mətn', d: fastU.slice(0, 5).join('; ') + '. Avtomatik doldurma və ya brauzer əlavəsi ola bilər.' });
+  const dur = (pkg.submitted || 0) - (pkg.started || 0);
+  const awayMs = Math.max(T.hiddenMs || 0, T.blurMs || 0);
+  if (dur > 0 && awayMs / dur >= 0.25) S.push({ lv: 'med', t: 'Vaxtın ' + Math.round(awayMs / dur * 100) + '%-i səhifədən kənarda', d: 'Səhifədən ' + Math.max(T.hidden || 0, T.blur || 0) + ' dəfə çıxılıb. Dərs materialına baxmaq da ola bilər, müsahibədə soruşun.' });
+  else if (Math.max(T.hidden || 0, T.blur || 0) >= 15) S.push({ lv: 'low', t: 'Səhifədən tez-tez çıxma: ' + Math.max(T.hidden || 0, T.blur || 0) + ' dəfə', d: 'Başqa pəncərəyə keçidlər qeydə alınıb.' });
+  if (dur > 0 && dur < 15 * 60000) S.push({ lv: 'med', t: 'Çox qısa iş müddəti: ' + Math.round(dur / 60000) + ' dəq.', d: 'Bütün laboratoriya adətən 45–70 dəqiqə çəkir.' });
+  // Lesson leakage: names/dates from the classroom example that are not in this student's own data
+  const allText = lc(fields.map(f => f.text).join(' \n '));
+  const leak = LESSON_TOKENS.filter(tk => allText.includes(tk) && !gen.datasetText.includes(tk));
+  if (leak.length) S.push({ lv: 'high', t: 'Dərs nümunəsinin datası işlədilib', d: 'Tələbənin öz cədvəlində olmayan ad/tarixlər: ' + leak.join(', ') + '. Cavab dərsdəki BakuShop nümunəsindən və ya başqasından köçürülmüş ola bilər.' });
+  // Copying the lesson's model policy
+  const copied = [];
+  POLICY.forEach((p, i) => { const s = shingles((pkg.answers.policy || [])[i] || ''); if (s.size >= 6 && containment(s, shingles(MODEL_POLICY[i])) >= 0.5) copied.push(p.t); });
+  if (copied.length >= 3) S.push({ lv: 'high', t: 'Siyasət dərs nümunəsindən köçürülüb: ' + copied.length + ' bölmə', d: copied.join(', ') });
+  else if (copied.length) S.push({ lv: 'low', t: 'Dərs nümunəsinə çox yaxın bölmə: ' + copied.length, d: copied.join(', ') });
+  // Formatting traces typical of text copied from a chat assistant
+  const fmt = fields.filter(f => /\*\*|^#{1,4}\s|^\s*[-•]\s|—/m.test(f.text)).map(f => f.label);
+  if (fmt.length >= 2) S.push({ lv: 'low', t: 'Söhbət botu formatına bənzər izlər', d: 'Ulduz işarəli qalın mətn, başlıq və ya siyahı işarələri: ' + fmt.slice(0, 4).join('; ') });
+  // Similarity with other students
+  if (others && others.length) {
+    const mine = shingles(fields.filter(f => !f.id.startsWith('f_')).map(f => f.text).join(' '));
+    const sims = [];
+    for (const o of others) { if (o.id === pkg._id) continue; const sim = jaccard(mine, o.sh); if (sim >= 0.25 && mine.size > 40) sims.push([o.name, sim]); }
+    sims.sort((a, b) => b[1] - a[1]);
+    if (sims.length) S.push({ lv: sims[0][1] >= 0.4 ? 'high' : 'med', t: 'Digər tələbə ilə oxşar mətn', d: sims.slice(0, 3).map(s => s[0] + ' (' + Math.round(s[1] * 100) + '%)').join(', ') });
+  }
+  if (pkg.sigOk === false) S.push({ lv: 'high', t: 'Təhvil kodu dəyişdirilib', d: 'Kodun yoxlama imzası uyğun gəlmir: təhvildən sonra əl ilə dəyişdirilmiş ola bilər.' });
+  if (pkg.seedOk === false) S.push({ lv: 'high', t: 'Data qrupa uyğun deyil', d: 'Təhvildəki data tələbənin qrupuna uyğun gəlmir: qrup adı dəyişdirilmiş ola bilər.' });
+  const hi = S.filter(s => s.lv === 'high').length, md = S.filter(s => s.lv === 'med').length, lo = S.filter(s => s.lv === 'low').length;
+  const level = hi || md >= 3 ? 'high' : (md || lo >= 2 ? 'med' : 'low');
+  return { list: S, level, pasteRatio: ratio, duration: dur, away: awayMs };
+}
+
+/* Oral-defence questions built from the student's own data and answers. */
+function oralQuestions(pkg, gen, grade) {
+  const Q = [];
+  const byType = t => gen.accounts.find(a => gen.key[a.id].type === t);
+  const lv = byType('LEAVER'); if (lv) Q.push(lv.user + ' hesabında Q1 pozuntusunu hansı iki tarixə baxaraq müəyyən etdin? Fərq neçə gündür?');
+  const nm = byType('OK_USER_NOMFA'); if (nm) Q.push(nm.user + ' hesabında MFA yoxdur. Bu niyə Q4 pozuntusu sayılır və ya sayılmır?');
+  const lvv = byType('LEAVE'); if (lvv) Q.push(lvv.owner + ' məzuniyyətdədir. Onun hesabının dondurulmadığını qəti yaza bilərikmi? Niyə?');
+  const wrong = gen.accounts.filter(a => grade.accounts[a.id].score < 1).slice(0, 2);
+  wrong.forEach(a => Q.push(a.user + ' üçün “' + (grade.accounts[a.id].given.map(t => TOKEN_LABEL[t]).join(', ') || 'heç nə') + '” seçmisən. Qərarını hansı sütuna əsaslandırdın?'));
+  Q.push('Siyasətinin “Şifrələr və sistemə giriş” bölməsində nəyi tələb etdin? Şifrə uzunluğunu niyə siyasətə yazmırıq?');
+  return Q.slice(0, 6);
+}
+
+/* ---------- Submission code (deterrent, not cryptography) ---------- */
+function signPkg(p) { const c = Object.assign({}, p); delete c.sig; return hash32(LAB.salt + JSON.stringify(c)); }
+function b64url(bytes) { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function unb64url(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const bin = atob(s); const out = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i); return out; }
+async function encodePkg(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  if (typeof CompressionStream !== 'undefined') {
+    try { const buf = await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer(); return 'GRC1.' + b64url(new Uint8Array(buf)); } catch (e) { }
+  }
+  return 'GRC0.' + b64url(bytes);
+}
+async function decodePkg(code) {
+  const m = /^GRC([01])\.([A-Za-z0-9_-]+)$/.exec(String(code).replace(/\s+/g, ''));
+  if (!m) throw new Error('Kod “GRC1.” və ya “GRC0.” ilə başlamalıdır.');
+  let bytes = unb64url(m[2]);
+  if (m[1] === '1') bytes = new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+  const pkg = JSON.parse(new TextDecoder().decode(bytes));
+  if (!pkg || pkg.lab !== LAB.id) throw new Error('Bu kod GRC laboratoriyasına aid deyil.');
+  pkg.sigOk = pkg.sig === signPkg(Object.assign({}, pkg, { sigOk: undefined }));
+  return pkg;
+}
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+</script>
+<script>
+(function () {
+  const $ = id => document.getElementById(id);
+  let db = null; const mem = new Map(); let docs = []; let selected = null; let confirmDel = false;
+  const levelName = { low: 'Aşağı', med: 'Orta', high: 'Yüksək' };
+
+  function copyFrom(el, msgEl) { const ok = () => { if (msgEl) msgEl.textContent = 'Kopyalandı.'; }; const fb = () => { el.focus(); el.select(); if (msgEl) msgEl.textContent = 'Seçildi: Ctrl+C ilə kopyalayın.'; }; try { navigator.clipboard.writeText(el.value).then(ok, fb); } catch (e) { fb(); } }
+  if ($('labLink').value === 'AUTO') $('labLink').value = new URL('./', location.href).href;
+  $('copyLink').addEventListener('click', () => copyFrom($('labLink')));
+  $('copyCsv').addEventListener('click', () => copyFrom($('csvOut'), $('csvMsg')));
+
+  /* ---- storage ---- */
+  async function put(id, body) { if (db) await db.collection('subs').doc(id).set(body); else { mem.set(id, body); refreshMem(); } }
+  async function patch(id, body) { if (db) await db.collection('subs').doc(id).update(body); else { mem.set(id, Object.assign({}, mem.get(id), body)); refreshMem(); } }
+  async function remove(id) { if (db) await db.collection('subs').doc(id).delete(); else { mem.delete(id); refreshMem(); } }
+  async function getDoc(id) { if (db) { const s = await db.collection('subs').doc(id).get(); return s.exists ? s.data() : null; } return mem.get(id) || null; }
+  const LS_KEY = 'grclab:teacher:v1';
+  function persistMem() { try { localStorage.setItem(LS_KEY, JSON.stringify([...mem.entries()])); return true; } catch (e) { return false; } }
+  function loadMem() { try { const a = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); a.forEach(([k, v]) => mem.set(k, v)); } catch (e) { } }
+  function refreshMem() { persistMem(); docs = [...mem.entries()].map(([id, d]) => { try { return prep(id, d); } catch (e) { return null; } }).filter(Boolean); render(); }
+  async function allRaw() { if (db) { const s = await db.collection('subs').get(); return s.docs.filter(d => d.exists).map(d => [d.id, d.data()]); } return [...mem.entries()]; }
+  $('bkMake').addEventListener('click', async () => { const a = await allRaw(); $('bkText').value = JSON.stringify({ lab: LAB.id, backup: 1, items: a }); $('bkMsg').textContent = a.length + ' təhvil.'; });
+  $('bkCopy').addEventListener('click', () => copyFrom($('bkText'), $('bkMsg')));
+  $('bkRestore').addEventListener('click', async () => {
+    try { const o = JSON.parse($('bkText').value); if (!o || o.lab !== LAB.id || !Array.isArray(o.items)) throw 0; for (const [id, d] of o.items) await put(id, d); $('bkMsg').textContent = o.items.length + ' təhvil bərpa edildi.'; }
+    catch (e) { $('bkMsg').textContent = 'Bu mətn panelin ehtiyat nüsxəsi deyil.'; }
+  });
+
+  function prep(id, d) {
+    const pkg = JSON.parse(JSON.stringify(d.pkg)); pkg._id = id;
+    const gen = generate(dataKey(pkg.student)); pkg.seedOk = gen.seed === pkg.seed;
+    const grade = gradeAuto(pkg, gen);
+    const sh = shingles(textFields(pkg, gen).filter(f => !f.id.startsWith('f_')).map(f => f.text).join(' '));
+    return { id, d, pkg, gen, grade, sh, name: pkg.student.name };
+  }
+  function scores(x) {
+    const g = x.d.grade || {};
+    const pol = Number.isFinite(g.policy) ? g.policy : null, wor = Number.isFinite(g.worst) ? g.worst : null;
+    const polV = pol ?? x.grade.suggestPolicy, worV = wor ?? x.grade.suggestWorst;
+    return { auto: x.grade.auto, pol: polV, wor: worV, polSet: pol !== null, worSet: wor !== null, total: Math.round((x.grade.auto + polV + worV) * 10) / 10, final: pol !== null && wor !== null };
+  }
+
+  /* ---- intake ---- */
+  async function addCodes(text) {
+    const codes = (String(text).match(/GRC[01]\.[A-Za-z0-9_-]+/g) || []);
+    if (!codes.length) { $('addMsg').innerHTML = '<span class="bad">Kod tapılmadı. Kod “GRC1.” ilə başlayır.</span>'; return; }
+    let ok = 0; const errs = [];
+    for (const c of codes) {
+      try {
+        const pkg = await decodePkg(c);
+        const id = 's-' + hash32(normCode(pkg.student.code) + '|' + lc(pkg.student.name).trim()).slice(0, 12);
+        const prev = await getDoc(id);
+        const fin = q => (Date.parse(q.startedAt || '') || 0) + (q.submitted || 0);
+        if (prev && prev.pkg.sig === pkg.sig) { ok++; continue; }
+        if (prev && fin(pkg) >= fin(prev.pkg)) { await patch(id, { resubmits: (prev.resubmits || 0) + 1 }); errs.push(pkg.student.name + ': təkrar təhvil, ilk təhvil saxlanıldı'); continue; }
+        await put(id, { pkg, addedAt: new Date().toISOString(), grade: prev ? prev.grade : { policy: null, worst: null, note: '', oral: false }, demo: false, resubmits: prev ? (prev.resubmits || 0) + 1 : 0 });
+        ok++;
+      } catch (e) { errs.push((e && e.message) || 'oxunmadı'); }
+    }
+    $('addMsg').innerHTML = '<span class="ok">' + ok + ' təhvil əlavə edildi.</span>' + (errs.length ? ' <span class="bad">' + esc(errs.join('; ')) + '</span>' : '');
+    if (ok) $('codesIn').value = '';
+  }
+  $('addBtn').addEventListener('click', () => addCodes($('codesIn').value));
+  $('fileIn').addEventListener('change', async e => { let all = ''; for (const f of e.target.files) all += ' ' + await f.text(); e.target.value = ''; addCodes(all); });
+
+  /* ---- demo submissions (clearly marked) ---- */
+  function demoPkg(kind) {
+    const code = kind === 'clean' ? 'NUMUNE-01' : 'NUMUNE-02';
+    const gen = generate('NÜMUNƏ'); const audit = {}; const tel = { f: {}, log: [], hidden: 0, hiddenMs: 0, blur: 0, blurMs: 0 };
+    gen.accounts.forEach((a, i) => { const k = gen.key[a.id]; let tokens = k.tokens.slice(); if (kind === 'clean' && k.type === 'OK_USER_NOMFA') tokens = ['Q4']; if (kind !== 'clean' && k.type === 'LEAVE') tokens = ['Q5']; audit[a.id] = { tokens, risk: k.risk[0], fact: k.ev.length ? (kind === 'clean' ? 'Cədvəldə ' + k.ev.slice(0, 2).join(' və ') + ' görünür' : 'Qayda pozulub') : '' }; });
+    const lv = gen.accounts.find(a => gen.key[a.id].type === 'LEAVER'); const lk = gen.key[lv.id];
+    const policy = kind === 'clean'
+      ? ['Siyasət müştəri məlumatlarını və şirkət sistemlərini icazəsiz girişdən və itkidən qoruyur.', 'Bütün daimi və müvəqqəti işçilərə və sistemə girişi olan podratçılara aiddir.', 'Hər kəs yalnız öz fərdi hesabından istifadə edir, şifrəni paylaşmaq qadağandır, admin hesablarında MFA məcburidir.', 'Müştəri siyahısını şəxsi telefona və WhatsApp-a göndərmək qadağandır.', 'Cihazı tərk edəndə ekran kilidlənir, itki dərhal IT-yə bildirilir.', 'Şübhəli e-poçtu və itmiş cihazı 1 saat ərzində IT-yə bildirmək lazımdır.', 'HR işdən çıxmanı IT-yə bildirir, hesab son iş günü bağlanır, məzuniyyətdə dondurulur.', 'Direktor təsdiqləyir, IT hesabları idarə edir, HR statusu bildirir.', 'Pozuntu araşdırılır, lazım olsa giriş məhdudlaşdırılır.', 'Direktor təsdiqləyir, ildə bir dəfə yenilənir.']
+      : MODEL_POLICY.slice();
+    const parts = kind === 'clean'
+      ? ['Q1: işdən çıxanın hesabı son iş günü bağlanmalıdır.', 'Son iş günü ' + lk.ev[0] + ', amma ' + lv.user + ' hesabında son giriş ' + lk.ev[1] + '.', 'Ehtimal ki HR IT-yə vaxtında bildirməyib, araşdırılmalıdır.', 'Keçmiş işçi müştəri məlumatına baxa bilər.', 'IT hesabı bu gün bağlasın, HR offboarding siyahısı tətbiq etsin.']
+      : ['**Qayda:** Q1 – İşdən çıxan işçinin hesabı son iş günü bağlanmalıdır.', 'HR siyahısında Leyla Həsənovanın son iş günü 12.08.2026 göstərilib. Sistem hesabları cədvəlində l.hasanova hesabı mövcuddur və son giriş tarixi 20.09.2026-dır.', 'Mövcud məlumat HR-in işdən ayrılma bildirişinin IT-yə vaxtında çatdırıldığını göstərmir.', 'İşdən ayrılmış şəxs müştəri məlumatlarına və şirkət sistemlərinə giriş əldə edə bilər.', 'IT dərhal hesabın hazırkı statusunu təsdiqləməli, zərurət varsa bağlamalıdır.'];
+    const answers = { policy, audit, calc: Object.fromEntries(gen.calc.map(c => [c.id, String(kind === 'clean' ? c.answer : c.answer + 3)])), worst: { acc: lv.id, parts }, reflection: kind === 'clean' ? 'Məzuniyyətdə olan işçinin hesabında status olmadığı üçün nə yazacağımı çətin seçdim.' : 'Hər şey aydın idi.' };
+    textFields({ answers }, gen).forEach(f => { const L = f.text.length; if (!L) return; tel.f[f.id] = kind === 'clean' ? { k: Math.round(L * 1.15), p: 0, pc: 0, bulk: 0, ms: L * 650, e: L, a: 1, z: 2, len: L } : { k: 3, p: 1, pc: L, bulk: 0, ms: 9000, e: 2, a: 1, z: 2, len: L }; });
+    if (kind !== 'clean') { tel.hidden = 22; tel.hiddenMs = 9 * 60000; tel.blur = 24; tel.blurMs = 9 * 60000; }
+    const pkg = { lab: LAB.id, v: LAB.v, student: { name: kind === 'clean' ? 'Nümunə: Aysel Kərimova' : 'Nümunə: Murad Abbasov', code, group: 'NÜMUNƏ' }, seed: gen.seed, started: 0, submitted: (kind === 'clean' ? 58 : 21) * 60000, startedAt: new Date().toISOString(), answers, tel };
+    pkg.sig = signPkg(pkg); pkg.sigOk = true; return pkg;
+  }
+  async function addDemos() { for (const k of ['clean', 'sus']) { const pkg = demoPkg(k); await put('demo-' + k, { pkg, addedAt: new Date().toISOString(), grade: { policy: null, worst: null, note: '', oral: false }, demo: true }); } }
+
+  /* ---- roster ---- */
+  function render() {
+    const others = docs.map(x => ({ id: x.id, name: x.name, sh: x.sh }));
+    const byCode = {};
+    docs.forEach(x => { const c = normCode(x.pkg.student.code); (byCode[c] = byCode[c] || []).push(x); });
+    docs.forEach(x => {
+      x.sig = computeSignals(x.pkg, x.gen, others); x.sc = scores(x);
+      const same = byCode[normCode(x.pkg.student.code)].filter(o => o !== x);
+      x.dup = same.length > 0;
+      if (x.d.resubmits) { x.sig.list.unshift({ lv: 'high', t: 'Təkrar təhvil: ' + x.d.resubmits + ' dəfə', d: 'Tələbə nəticəsini gördükdən sonra yenidən təhvil verib. Qiymətləndirilən ilk təhvildir; təkrar işin kodu saxlanmayıb.' }); x.sig.level = 'high'; }
+      if (x.dup) { x.sig.list.unshift({ lv: 'high', t: 'Eyni kod başqa tələbədə də var', d: 'Kod ' + x.pkg.student.code + ' ilə təhvil verənlər: ' + same.map(o => o.name).join(', ') + '. Hər ikisi eyni datanı və eyni cavab açarını alıb.' }); x.sig.level = 'high'; }
+    });
+    docs.sort((a, b) => a.name.localeCompare(b.name, 'az'));
+    const n = docs.length, avg = n ? docs.reduce((s, x) => s + x.sc.total, 0) / n : 0, hi = docs.filter(x => x.sig.level === 'high').length;
+    $('stats').innerHTML = n ? '<div class="stat"><b>' + n + '</b><span>təhvil</span></div><div class="stat"><b>' + avg.toFixed(1) + '</b><span>orta bal / 100</span></div><div class="stat"><b>' + hi + '</b><span>yüksək diqqət</span></div><div class="stat"><b>' + docs.filter(x => x.sc.final).length + '</b><span>yekunlaşdırılıb</span></div>' : '';
+    if (!n) {
+      $('roster').innerHTML = '<div class="empty"><h3>Hələ təhvil yoxdur</h3><p class="muted">Tələbələr kodlarını göndərdikcə burada sinif siyahısı, ballar və proses siqnalları görünəcək. Paneli necə işlədiyini görmək üçün iki nümunə təhvil əlavə edə bilərsiniz: biri normal, biri şübhəli proseslə.</p><button type="button" id="demoBtn">Nümunə təhvilləri göstər</button></div>';
+      $('demoBtn').addEventListener('click', addDemos);
+      $('detail').hidden = true; $('csvOut').value = ''; return;
+    }
+    $('roster').innerHTML = '<div class="tbl"><table><thead><tr><th>Tələbə</th><th>Kod</th><th class="num">Audit /45</th><th class="num">Siyasət /40</th><th class="num">Tapıntı /15</th><th class="num">Cəmi</th><th>Proses</th><th class="num">Müddət</th></tr></thead><tbody>' +
+      docs.map(x => '<tr tabindex="0" data-id="' + x.id + '"' + (x.id === selected ? ' class="sel"' : '') + '><td><b>' + esc(x.name) + '</b>' + (x.d.demo ? ' <span class="chip demo">nümunə</span>' : '') + (x.dup ? ' <span class="chip high">kod təkrarı</span>' : '') + '<div class="small muted">' + esc(x.pkg.student.group || '') + '</div></td><td class="mono small' + (x.dup ? ' bad' : '') + '">' + esc(x.pkg.student.code) + '</td><td class="num">' + x.sc.auto + '</td><td class="num">' + x.sc.pol + (x.sc.polSet ? '' : '<span class="muted small">*</span>') + '</td><td class="num">' + x.sc.wor + (x.sc.worSet ? '' : '<span class="muted small">*</span>') + '</td><td class="num"><b>' + x.sc.total + '</b></td><td><span class="chip ' + x.sig.level + '">' + levelName[x.sig.level] + '</span> <span class="small muted">' + esc(x.sig.list[0] ? x.sig.list[0].t : 'siqnal yoxdur') + '</span></td><td class="num">' + Math.round(x.sig.duration / 60000) + ' dəq</td></tr>').join('') +
+      '</tbody></table></div><p class="small muted">* sistemin təklif etdiyi bal; detalda təsdiqləyin. Proses səviyyəsi yalnız diqqət siqnalıdır, AI istifadəsinin sübutu deyil.</p>';
+    $('roster').querySelectorAll('tr[data-id]').forEach(tr => { const open = () => { selected = tr.dataset.id; confirmDel = false; render(); $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); }; tr.addEventListener('click', open); tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } }); });
+    $('csvOut').value = ['Ad,Kod,Qrup,Audit45,Siyaset40,Tapinti15,Cemi100,Proses,Muddet_deq'].concat(docs.map(x => [x.name, x.pkg.student.code, x.pkg.student.group || '', x.sc.auto, x.sc.pol, x.sc.wor, x.sc.total, levelName[x.sig.level], Math.round(x.sig.duration / 60000)].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','))).join('\n');
+    renderDetail(); renderBoard();
+  }
+
+  /* ---- overall ranking (teacher only) ---- */
+  $('lbGroup').addEventListener('change', () => renderBoard());
+  function renderBoard() {
+    const groups = [...new Set(docs.filter(x => !x.d.demo).map(x => x.pkg.student.group || '').filter(Boolean))].sort();
+    const cur = $('lbGroup').value;
+    $('lbGroup').innerHTML = '<option value="">Hamısı</option>' + groups.map(g => '<option' + (g === cur ? ' selected' : '') + '>' + esc(g) + '</option>').join('');
+    const rows = docs.filter(x => !cur || (x.pkg.student.group || '') === cur).slice().sort((a, b) => b.sc.total - a.sc.total || a.name.localeCompare(b.name, 'az'));
+    let rank = 0, prev = null; rows.forEach((x, i) => { if (x.sc.total !== prev) { rank = i + 1; prev = x.sc.total; } x.rank = rank; });
+    const avg = rows.length ? rows.reduce((t, x) => t + x.sc.total, 0) / rows.length : 0;
+    $('lbPreview').innerHTML = rows.length ? '<div class="tbl"><table><thead><tr><th class="num">Yer</th><th>Tələbə</th><th>Qrup</th><th class="num">Audit</th><th class="num">Siyasət</th><th class="num">Tapıntı</th><th class="num">Cəmi</th><th>Status</th><th>Proses</th></tr></thead><tbody>' +
+      rows.map(x => '<tr><td class="num"><b>' + x.rank + '</b></td><td>' + esc(x.name) + (x.dup ? ' <span class="chip high">kod təkrarı</span>' : '') + (x.d.demo ? ' <span class="chip demo">nümunə</span>' : '') + '</td><td>' + esc(x.pkg.student.group || '') + '</td><td class="num">' + x.sc.auto + '</td><td class="num">' + x.sc.pol + (x.sc.polSet ? '' : '*') + '</td><td class="num">' + x.sc.wor + (x.sc.worSet ? '' : '*') + '</td><td class="num"><b>' + x.sc.total + '</b></td><td class="small muted">' + (x.sc.final ? 'yekun' : 'ilkin') + '</td><td><span class="chip ' + x.sig.level + '">' + levelName[x.sig.level] + '</span></td></tr>').join('') +
+      '</tbody></table></div>' : '<p class="muted">Hələ nəticə yoxdur.</p>';
+    $('lbMsg').textContent = rows.length ? 'Orta bal: ' + avg.toFixed(1) + ' / 100 · ' + rows.filter(x => x.sc.final).length + ' iş yekunlaşdırılıb · * sistemin təklif etdiyi bal' : '';
+  }
+
+  function telChips(t, len) {
+    if (!t) return '<span class="chip demo">qeyd yoxdur</span>';
+    const c = [];
+    c.push('<span class="chip info">' + Math.max(1, Math.round((t.ms || 0) / 60000)) + ' dəq yazılıb</span>');
+    if (t.pc) c.push('<span class="chip ' + (t.pc >= 120 ? 'high' : 'med') + '">yapışdırma: ' + t.pc + ' simvol</span>');
+    if (t.bulk) c.push('<span class="chip med">birdən daxil: ' + t.bulk + '</span>');
+    if (len > 60 && !t.pc && (t.k || 0) >= len * 0.6) c.push('<span class="chip low">klaviatura ilə</span>');
+    return c.join(' ');
+  }
+
+  function renderDetail() {
+    const x = docs.find(d => d.id === selected); const box = $('detail');
+    if (!x) { box.hidden = true; return; }
+    box.hidden = false;
+    const { pkg, gen, grade, sig, sc } = x; const A = pkg.answers; const T = pkg.tel || { f: {} }; const g = x.d.grade || {};
+    const tokenStr = arr => arr.length ? arr.map(t => TOKEN_LABEL[t]).join(', ') : '—';
+    const fieldsById = Object.fromEntries(textFields(pkg, gen).map(f => [f.id, f]));
+    box.innerHTML =
+      '<div class="card"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:start"><div style="display:flex;flex-direction:column;gap:4px"><p class="eyebrow">Tələbə işi</p><h2>' + esc(pkg.student.name) + '</h2><p class="small muted">Kod <span class="mono">' + esc(pkg.student.code) + '</span> · ' + esc(pkg.student.group || 'qrup yoxdur') + ' · ' + esc(gen.company) + ' · başlama ' + esc((pkg.startedAt || '').slice(0, 16).replace('T', ' ')) + ' · ' + Math.round(sig.duration / 60000) + ' dəq</p></div>' +
+      '<div class="btns">' + (confirmDel ? '<span class="small">Silinsin?</span><button class="danger" id="delYes" type="button">Bəli, sil</button><button id="delNo" type="button">Ləğv et</button>' : '<button id="delBtn" type="button">Təhvili sil</button>') + '</div></div></div>' +
+
+      '<div class="cols">' +
+      '<div class="card"><h3>Bal</h3><div class="scoreline">' +
+      '<span>Audit qərarları (Q kodları)</span><span class="num">' + grade.parts.codes + ' / 30</span>' +
+      '<span>Risk dərəcələri</span><span class="num">' + grade.parts.risk + ' / 5</span>' +
+      '<span>Faktların öz datasına bağlılığı</span><span class="num">' + grade.parts.facts + ' / 5</span>' +
+      '<span>Hesablama</span><span class="num">' + grade.parts.calc + ' / 5</span></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label for="gPol">Siyasət / 40</label><input type="number" id="gPol" min="0" max="40" step="0.5" value="' + (Number.isFinite(g.policy) ? g.policy : '') + '" placeholder="təklif: ' + grade.suggestPolicy + '"></div><div><label for="gWor">Ən ciddi tapıntı / 15</label><input type="number" id="gWor" min="0" max="15" step="0.5" value="' + (Number.isFinite(g.worst) ? g.worst : '') + '" placeholder="təklif: ' + grade.suggestWorst + '"></div></div>' +
+      '<div><label for="gNote">Müəllim qeydi</label><textarea id="gNote">' + esc(g.note || '') + '</textarea></div>' +
+      '<label style="display:flex;gap:8px;align-items:center;font-weight:500"><input type="checkbox" id="gOral"' + (g.oral ? ' checked' : '') + '> Şifahi müsahibə lazımdır</label>' +
+      '<div style="display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap"><div><span class="small muted">Cəmi</span><div class="total">' + sc.total + '<span class="small muted"> / 100</span></div></div><div class="btns"><button class="primary" id="saveGrade" type="button">Qiyməti saxla</button><span class="small" id="gMsg"></span></div></div></div>' +
+
+      '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3>İş prosesi</h3><span class="chip ' + sig.level + '">Diqqət: ' + levelName[sig.level] + '</span></div>' +
+      '<div class="scoreline"><span>Yapışdırılmış mətn</span><span class="num">' + Math.round(sig.pasteRatio * 100) + '%</span></div><div class="bar" aria-hidden="true"><i style="width:' + Math.min(100, Math.round(sig.pasteRatio * 100)) + '%"></i></div>' +
+      '<div class="scoreline"><span>Səhifədən kənarda</span><span class="num">' + Math.round(sig.away / 60000) + ' dəq</span><span>Pəncərədən çıxma</span><span class="num">' + Math.max(T.hidden || 0, T.blur || 0) + ' dəfə</span></div>' +
+      '<div>' + (sig.list.length ? sig.list.map(s => '<div class="sig"><span><span class="chip ' + s.lv + '">' + levelName[s.lv] + '</span></span><div><b>' + esc(s.t) + '</b><div class="small muted">' + esc(s.d) + '</div></div></div>').join('') : '<p class="muted">Diqqət siqnalı yoxdur: mətnlər klaviatura ilə yazılıb və tələbənin öz datasına uyğundur.</p>') + '</div>' +
+      '<p class="note">Bu siqnallar AI istifadəsinin sübutu deyil. Şübhə olduqda tələbədən aşağıdakı sualları soruşun: öz datasını izah edə bilirsə, iş onundur.</p>' +
+      '<h3>Şifahi yoxlama sualları</h3><ol class="q">' + oralQuestions(pkg, gen, grade).map(q => '<li>' + esc(q) + '</li>').join('') + '</ol></div>' +
+      '</div>' +
+
+      '<div class="card"><h3>Audit: tələbənin qərarı və cavab açarı</h3><div class="tbl"><table><thead><tr><th>Hesab</th><th>Data</th><th>Tələbə</th><th>Açar</th><th>Risk</th><th>Fakt</th></tr></thead><tbody>' +
+      gen.accounts.map(a => { const k = gen.key[a.id], r = grade.accounts[a.id]; const okc = r.score === 1 ? 'ok' : (r.score > 0 ? '' : 'bad');
+        return '<tr><td class="mono">' + esc(a.user) + '</td><td class="small">' + esc(a.owner) + ' · ' + esc(a.role) + ' · MFA ' + esc(a.mfa) + ' · ' + fmtDay(a.last) + '</td><td class="' + okc + '"><b>' + (r.score === 1 ? '✓ ' : (r.score > 0 ? '≈ ' : '✗ ')) + '</b>' + esc(tokenStr(r.given)) + '</td><td>' + esc(tokenStr(k.tokens)) + '<div class="small muted">' + esc(k.why) + '</div></td><td class="' + (r.riskOk ? 'ok' : 'bad') + '">' + esc(r.risk) + (r.riskOk ? '' : '<div class="small muted">gözlənilən: ' + esc(k.risk.join(' / ')) + '</div>') + '</td><td class="small">' + esc(r.fact || '—') + (r.factOk === false ? '<div class="bad small">öz datasından fakt yoxdur</div>' : '') + '<div class="tel" style="margin-top:4px">' + (T.f['f_' + a.id] && T.f['f_' + a.id].pc ? telChips(T.f['f_' + a.id], (r.fact || '').length) : '') + '</div></td></tr>'; }).join('') +
+      '</tbody></table></div>' +
+      '<h3>Hesablama</h3>' + gen.calc.map(c => { const r = grade.calc[c.id]; return '<p class="small"><span class="' + (r.ok ? 'ok' : 'bad') + '"><b>' + (r.ok ? '✓' : '✗') + '</b></span> ' + esc(c.q) + ' Tələbə: <b>' + (r.given ?? '—') + '</b>, düzgün: <b>' + c.answer + '</b></p>'; }).join('') + '</div>' +
+
+      '<div class="card"><h3>Siyasət <span class="small muted">· sistem təklifi ' + grade.suggestPolicy + ' / 40</span></h3>' +
+      POLICY.map((p, i) => { const t = (A.policy || [])[i] || ''; const pp = grade.policy[i]; return '<div class="ans"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>' + (i + 1) + '. ' + esc(p.t) + '</b><span class="small muted">təklif ' + pp.pts + ' / 4</span></div><div class="txt">' + (esc(t) || '<span class="muted">boş</span>') + '</div><div class="tel">' + telChips(T.f['p' + i], t.length) + '</div></div>'; }).join('') + '</div>' +
+
+      '<div class="card"><h3>Ən ciddi tapıntı <span class="small muted">· seçilmiş hesab: <span class="mono">' + esc((gen.accounts.find(a => a.id === (A.worst || {}).acc) || {}).user || '—') + '</span> · təklif ' + grade.suggestWorst + ' / 15</span></h3>' +
+      WORST_PARTS.map((w, i) => { const t = ((A.worst || {}).parts || [])[i] || ''; return '<div class="ans"><b>' + w[0] + '</b><div class="txt">' + (esc(t) || '<span class="muted">boş</span>') + '</div><div class="tel">' + telChips(T.f['w' + i], t.length) + '</div></div>'; }).join('') +
+      '<div class="ans"><b>Əks etdirmə</b><div class="txt">' + (esc(A.reflection) || '<span class="muted">boş</span>') + '</div><div class="tel">' + telChips(T.f.refl, (A.reflection || '').length) + '</div></div></div>' +
+
+      '<div class="card"><details><summary>Hadisə jurnalı (' + (T.log || []).length + ')</summary><div class="tbl" style="margin-top:10px"><table><thead><tr><th>Vaxt</th><th>Hadisə</th><th>Xana</th><th class="num">Ölçü</th></tr></thead><tbody>' +
+      (T.log || []).map(l => { const nm = { p: 'Yapışdırma', d: 'Sürüklə-burax', b: 'Birdən daxil etmə', h: 'Səhifədən qayıdış', s: 'Təhvil kodu' }[l[0]] || l[0]; const unit = l[0] === 'h' ? ' san' : ' simvol'; return '<tr><td class="mono small">' + pad2(Math.floor(l[3] / 60)) + ':' + pad2(l[3] % 60) + '</td><td>' + nm + '</td><td class="small">' + esc(fieldsById[l[1]] ? fieldsById[l[1]].label : (l[1] || '—')) + '</td><td class="num">' + l[2] + unit + '</td></tr>'; }).join('') +
+      '</tbody></table></div></details></div>';
+
+    $('saveGrade').addEventListener('click', async () => {
+      const num = (v, max) => { if (v === '') return null; const n = Math.max(0, Math.min(max, parseFloat(v))); return Number.isFinite(n) ? n : null; };
+      const grade2 = { policy: num($('gPol').value, 40), worst: num($('gWor').value, 15), note: $('gNote').value, oral: $('gOral').checked };
+      try { await patch(x.id, { grade: grade2 }); $('gMsg').textContent = 'Saxlanıldı.'; } catch (e) { $('gMsg').textContent = 'Saxlanmadı: yenidən cəhd edin.'; }
+    });
+    if ($('delBtn')) $('delBtn').addEventListener('click', () => { confirmDel = true; renderDetail(); });
+    if ($('delNo')) $('delNo').addEventListener('click', () => { confirmDel = false; renderDetail(); });
+    if ($('delYes')) $('delYes').addEventListener('click', async () => { const id = x.id; selected = null; confirmDel = false; await remove(id); });
+  }
+
+  /* ---- answer key viewer ---- */
+  $('keyBtn').addEventListener('click', () => {
+    const code = normCode($('keyCode').value); if (!code) return; const gen = generate(code);
+    $('keyOut').innerHTML = '<p><b>' + esc(gen.company) + '</b> · ' + esc(gen.desc) + '</p><div class="tbl"><table><thead><tr><th>Hesab</th><th>Sahib</th><th>Rol</th><th>MFA</th><th>Son giriş</th><th>Açar</th><th>Risk</th></tr></thead><tbody>' +
+      gen.accounts.map(a => { const k = gen.key[a.id]; return '<tr><td class="mono">' + esc(a.user) + '</td><td>' + esc(a.owner) + '</td><td>' + esc(a.role) + '</td><td>' + esc(a.mfa) + '</td><td>' + fmtDay(a.last) + '</td><td>' + esc(k.tokens.map(t => TOKEN_LABEL[t]).join(', ')) + '<div class="small muted">' + esc(k.why) + '</div></td><td>' + esc(k.risk.join(' / ')) + '</td></tr>'; }).join('') +
+      '</tbody></table></div><p class="small muted">Hesablama: ' + gen.calc.map(c => esc(c.q) + ' → <b>' + c.answer + '</b>').join(' · ') + '</p>';
+  });
+
+  /* ---- boot ---- */
+  render();
+  (async () => {
+    db = (window.claude && window.claude.use) ? await window.claude.use('db') : null;
+    if (!db) { loadMem(); const ok = persistMem(); $('dbState').textContent = ok ? 'Təhvillər və qiymətlər bu brauzerdə saxlanılır. Ehtiyat nüsxəni vaxtaşırı götürün.' : 'Brauzer saxlaması bağlıdır: təhvillər yalnız bu səhifə açıq olduqca qalır.'; refreshMem(); return; }
+    $('dbState').textContent = 'Təhvillər və qiymətlər bu paneldə saxlanılır. Panel yalnız sizə görünür.';
+    db.collection('subs').onSnapshot(snap => { docs = snap.docs.filter(s => s.exists).map(s => { try { return prep(s.id, s.data()); } catch (e) { return null; } }).filter(Boolean); render(); }, () => { $('dbState').textContent = 'Saxlama ilə əlaqə kəsildi. Səhifəni yeniləyin.'; });
+  })();
+})();
+</script>
+
+</body>
+</html>
