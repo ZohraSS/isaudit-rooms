@@ -91,7 +91,7 @@ ol.q{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
       <div style="display:flex;flex-direction:column;gap:8px">
         <h3>Tələbə laboratoriyası</h3>
         <p class="small muted">Bu linki tələbələrə göndərin. Hər tələbə öz kodunu daxil edir və fərdi data alır.</p>
-        <div class="btns"><input type="text" id="labLink" readonly class="mono small" value="AUTO"><button type="button" id="copyLink">Kopyala</button></div>
+        <div class="btns"><input type="text" id="labLink" readonly class="mono small" value="AUTO:grc.html"><button type="button" id="copyLink">Kopyala</button></div>
         <p class="small muted" id="dbState"></p>
       </div>
     </div>
@@ -454,7 +454,7 @@ function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;
   const levelName = { low: 'Aşağı', med: 'Orta', high: 'Yüksək' };
 
   function copyFrom(el, msgEl) { const ok = () => { if (msgEl) msgEl.textContent = 'Kopyalandı.'; }; const fb = () => { el.focus(); el.select(); if (msgEl) msgEl.textContent = 'Seçildi: Ctrl+C ilə kopyalayın.'; }; try { navigator.clipboard.writeText(el.value).then(ok, fb); } catch (e) { fb(); } }
-  if ($('labLink').value === 'AUTO') $('labLink').value = new URL('./', location.href).href;
+  if ($('labLink').value.startsWith('AUTO:')) $('labLink').value = new URL($('labLink').value.slice(5), location.href).href;
   $('copyLink').addEventListener('click', () => copyFrom($('labLink')));
   $('copyCsv').addEventListener('click', () => copyFrom($('csvOut'), $('csvMsg')));
 
