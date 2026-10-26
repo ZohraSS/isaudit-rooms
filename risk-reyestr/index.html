@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>ABC Bank Reyestr Laboratoriyası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+</head>
+<body>
+<style>
+/* Layout: a bank ledger — case file on top, four numbered steps, each register a ruled ledger table under its entry form */
+:root{
+  --paper:#F4F6F8; --sheet:#FFFFFF; --ink:#15233A; --ink-2:#4A5872; --ink-3:#6E7A90;
+  --rule:#DCE1E8; --rule-2:#C6CDD8; --accent:#1F5FA8; --accent-ink:#FFFFFF; --accent-soft:#E6EEF8;
+  --crit:#B42318; --crit-bg:#FBE4E1; --high:#B54708; --high-bg:#FCEBD7; --mid:#8A6A00; --mid-bg:#F8F0C8; --low:#1E7A45; --low-bg:#DDF1E4;
+  --font:"IBM Plex Sans","Noto Sans",Arial,sans-serif; --mono:"IBM Plex Mono","Noto Sans Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E1622; --sheet:#152131; --ink:#E7ECF3; --ink-2:#B3BECD; --ink-3:#8C99AB;
+  --rule:#26364B; --rule-2:#33465F; --accent:#6EA8EC; --accent-ink:#0E1622; --accent-soft:#1B2E47;
+  --crit:#FF9C8F; --crit-bg:#4A1D19; --high:#FFB872; --high-bg:#47290F; --mid:#E9CF6A; --mid-bg:#3D3412; --low:#7FD6A1; --low-bg:#163A26; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E1622; --sheet:#152131; --ink:#E7ECF3; --ink-2:#B3BECD; --ink-3:#8C99AB;
+  --rule:#26364B; --rule-2:#33465F; --accent:#6EA8EC; --accent-ink:#0E1622; --accent-soft:#1B2E47;
+  --crit:#FF9C8F; --crit-bg:#4A1D19; --high:#FFB872; --high-bg:#47290F; --mid:#E9CF6A; --mid-bg:#3D3412; --low:#7FD6A1; --low-bg:#163A26; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.2}
+h1{font-size:28px;font-weight:700;letter-spacing:-.01em}
+h2{font-size:20px;font-weight:600}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--ink-2)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header.top{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-content:space-between}
+header.top .t{display:flex;flex-direction:column;gap:6px;min-width:0;max-width:640px}
+.group{display:flex;flex-direction:column;gap:6px;min-width:220px}
+label{font-size:13px;font-weight:600;color:var(--ink-2)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--sheet);border:1px solid var(--rule-2);border-radius:6px;padding:8px 10px;width:100%}
+textarea{resize:vertical;min-height:64px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font:inherit;font-weight:600;cursor:pointer;border-radius:6px;padding:8px 14px;border:1px solid var(--rule-2);background:var(--sheet);color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.ghost{border-color:transparent;background:transparent;color:var(--accent);padding:4px 8px}
+button.danger{color:var(--crit)}
+button:hover{filter:brightness(.97)}
+nav.steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+nav.steps button{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:12px 14px;border-radius:8px;background:var(--sheet);border:1px solid var(--rule)}
+nav.steps button .n{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+nav.steps button .l{font-size:15px}
+nav.steps button .c{font-size:12px;font-weight:500;color:var(--ink-3)}
+nav.steps button[aria-selected="true"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+nav.steps button[aria-selected="true"] .n{color:var(--accent)}
+@media (max-width:720px){nav.steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.panel{display:flex;flex-direction:column;gap:20px}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.intro{display:flex;flex-direction:column;gap:8px;max-width:760px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field.wide{grid-column:1/-1}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cia{display:flex;gap:14px;flex-wrap:wrap;padding-top:4px}
+.cia label{display:flex;gap:6px;align-items:center;font-weight:500;color:var(--ink)}
+.cia input{width:auto}
+.hint{font-size:13px;color:var(--ink-3)}
+.checks{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.checks li{font-size:13px;padding:6px 10px;border-radius:6px;background:var(--high-bg);color:var(--high)}
+.checks li.ok{background:var(--low-bg);color:var(--low)}
+.scorebox{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:8px;background:var(--accent-soft)}
+.scorebox .num{font-family:var(--mono);font-size:26px;font-weight:600}
+.table-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:8px;background:var(--sheet)}
+table{border-collapse:collapse;width:100%;min-width:820px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--rule)}
+th{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);background:var(--paper)}
+tr:last-child td{border-bottom:none}
+td.id{font-family:var(--mono);font-weight:600;white-space:nowrap}
+td .stmt{max-width:360px}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.Kritik{background:var(--crit-bg);color:var(--crit)}
+.pill.Yüksək{background:var(--high-bg);color:var(--high)}
+.pill.Orta{background:var(--mid-bg);color:var(--mid)}
+.pill.Aşağı{background:var(--low-bg);color:var(--low)}
+.pill.status{background:var(--accent-soft);color:var(--accent)}
+.pill.example{background:var(--paper);color:var(--ink-3);border:1px dashed var(--rule-2)}
+.empty{padding:28px;text-align:center;color:var(--ink-3)}
+.events{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--sheet)}
+.ev{display:grid;grid-template-columns:72px minmax(0,1fr) 200px auto;gap:14px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--rule)}
+.ev:last-child{border-bottom:none}
+.ev .src{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.ev .fb{grid-column:2/-1;font-size:13px;padding:6px 10px;border-radius:6px}
+.ev .fb.good{background:var(--low-bg);color:var(--low)}
+.ev .fb.bad{background:var(--crit-bg);color:var(--crit)}
+@media (max-width:760px){.ev{grid-template-columns:1fr}.ev .fb{grid-column:1}}
+.matrix{display:grid;grid-template-columns:40px repeat(5,minmax(0,1fr));gap:4px;max-width:720px}
+.matrix .ax{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--ink-3)}
+.matrix .cell{min-height:76px;border-radius:6px;padding:6px;display:flex;flex-direction:column;gap:4px}
+.matrix .cell .sc{font-family:var(--mono);font-size:11px;opacity:.8}
+.matrix .cell .ids{display:flex;flex-wrap:wrap;gap:3px}
+.matrix .cell .ids span{font-family:var(--mono);font-size:11px;font-weight:600;background:var(--sheet);color:var(--ink);padding:1px 5px;border-radius:4px}
+.c-Kritik{background:var(--crit-bg);color:var(--crit)} .c-Yüksək{background:var(--high-bg);color:var(--high)} .c-Orta{background:var(--mid-bg);color:var(--mid)} .c-Aşağı{background:var(--low-bg);color:var(--low)}
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+.confirm{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;border-radius:8px;background:var(--crit-bg);color:var(--crit)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;font-weight:600;font-size:14px;z-index:20}
+.exportbox textarea{font-family:var(--mono);font-size:12px;min-height:140px}
+.footer{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border-top:1px solid var(--rule);padding-top:16px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="t">
+      <p class="eyebrow">Dərs 3 · Praktiki məşğələ · ABC Bank (uydurma)</p>
+      <h1>İnsident və risk reyestri</h1>
+      <p class="muted">Bankın hadisə jurnalını oxuyun, insidentləri qeydə alın, onlardan gələcək riskləri çıxarın və qiymətləndirin. İşiniz bu brauzerdə saxlanılır; sonda CSV kimi ixrac edib müəllimə göndərin.</p>
+    </div>
+    <div class="group">
+      <label for="groupName">Qrupun adı</label>
+      <input id="groupName" placeholder="məs. Qrup 3 — Aysel, Murad" autocomplete="off">
+    </div>
+  </header>
+
+  <nav class="steps" role="tablist" aria-label="Addımlar">
+    <button role="tab" id="tab-events" aria-controls="p-events" aria-selected="true"><span class="n">ADDIM 1</span><span class="l">Hadisə jurnalı</span><span class="c" id="cnt-events">8 qeyd</span></button>
+    <button role="tab" id="tab-inc" aria-controls="p-inc" aria-selected="false"><span class="n">ADDIM 2</span><span class="l">İnsident reyestri</span><span class="c" id="cnt-inc">0 insident</span></button>
+    <button role="tab" id="tab-risk" aria-controls="p-risk" aria-selected="false"><span class="n">ADDIM 3</span><span class="l">Risk reyestri</span><span class="c" id="cnt-risk">0 risk</span></button>
+    <button role="tab" id="tab-matrix" aria-controls="p-matrix" aria-selected="false"><span class="n">ADDIM 4</span><span class="l">Matris və ixrac</span><span class="c">5 × 5</span></button>
+  </nav>
+
+  <!-- STEP 1 -->
+  <section class="panel" id="p-events" role="tabpanel" aria-labelledby="tab-events">
+    <div class="intro">
+      <h2>Hadisə jurnalı: hansı qeyd insidentdir?</h2>
+      <p class="muted">Bunlar bankın fərqli mənbələrdən gələn qeydləridir. Hər birinin növünü seçin. İnsident artıq baş verib; zəiflik çatışmazlıqdır; təhdid məlumatı gələcək təhlükə barədə xəbərdir. Heç biri hazır risk deyil — riskləri 3-cü addımda siz yazacaqsınız.</p>
+    </div>
+    <div class="events" id="events"></div>
+    <div class="row">
+      <button class="primary" id="checkEvents">Cavabları yoxla</button>
+      <span class="hint" id="eventsScore"></span>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" id="p-inc" role="tabpanel" aria-labelledby="tab-inc" hidden>
+    <div class="intro">
+      <h2>İnsident reyestri: nə baş verib?</h2>
+      <p class="muted">Faktı yazın: nə vaxt, hansı aktivdə, hansı CIA xüsusiyyəti pozuldu, nə edildi. İnsident keçmiş zamanda yazılır.</p>
+    </div>
+    <form class="sheet" id="incForm" novalidate>
+      <div class="row" style="justify-content:space-between"><h3 id="incFormTitle">Yeni insident</h3><span class="mono muted" id="incNextId"></span></div>
+      <div class="grid">
+        <div class="field"><label for="i-date">Tarix</label><input id="i-date" type="date"></div>
+        <div class="field"><label for="i-asset">Təsirlənən aktiv</label><input id="i-asset" placeholder="məs. Mobile Banking App"></div>
+        <div class="field"><label for="i-sev">Ciddilik</label><select id="i-sev"><option>Aşağı</option><option>Orta</option><option selected>Yüksək</option><option>Kritik</option></select></div>
+        <div class="field"><label for="i-status">Status</label><select id="i-status"><option>Açıq</option><option>Araşdırılır</option><option>Bağlanıb</option></select></div>
+        <div class="field wide"><label for="i-desc">Nə baş verdi?</label><textarea id="i-desc" placeholder="məs. 3 müştəri fişinq SMS-dən sonra hesablarından icazəsiz köçürmə olduğunu bildirdi."></textarea></div>
+        <div class="field wide"><span class="hint" style="font-weight:600;color:var(--ink-2)">Pozulan xüsusiyyət</span>
+          <div class="cia"><label><input type="checkbox" id="i-c"> Confidentiality</label><label><input type="checkbox" id="i-i"> Integrity</label><label><input type="checkbox" id="i-a"> Availability</label></div></div>
+        <div class="field"><label for="i-cause">Ehtimal olunan səbəb (zəiflik)</label><input id="i-cause" placeholder="məs. əlavə təsdiq yoxdur"></div>
+        <div class="field"><label for="i-action">Görülən tədbir</label><input id="i-action" placeholder="məs. hesablar bloklandı"></div>
+      </div>
+      <ul class="checks" id="incChecks" hidden></ul>
+      <div class="row"><button class="primary" type="submit" id="incSubmit">Reyestrə əlavə et</button><button type="button" id="incCancel" hidden>Ləğv et</button></div>
+    </form>
+    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Tarix</th><th>Təsvir</th><th>Aktiv</th><th>CIA</th><th>Ciddilik</th><th>Status</th><th>Səbəb / tədbir</th><th></th></tr></thead><tbody id="incRows"></tbody></table></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" id="p-risk" role="tabpanel" aria-labelledby="tab-risk" hidden>
+    <div class="intro">
+      <h2>Risk reyestri: nə baş verə bilər?</h2>
+      <p class="muted">Hər insident və zəiflikdən gələcəyə yönəlmiş risk yazın. Beş elementi doldurun, ifadəni şablonla qurun, sonra Likelihood və Impact balı verin. Keçmiş insident Likelihood üçün sübutdur — onu əlaqələndirin.</p>
+    </div>
+    <form class="sheet" id="riskForm" novalidate>
+      <div class="row" style="justify-content:space-between"><h3 id="riskFormTitle">Yeni risk</h3><span class="mono muted" id="riskNextId"></span></div>
+      <div class="grid">
+        <div class="field"><label for="r-asset">Asset — aktiv</label><input id="r-asset" placeholder="məs. müştəri hesabları"></div>
+        <div class="field"><label for="r-actor">Threat Actor</label><input id="r-actor" placeholder="məs. xarici kibercinayətkar"></div>
+        <div class="field"><label for="r-threat">Threat — hadisə</label><input id="r-threat" placeholder="məs. fişinqlə icazəsiz giriş və köçürmə"></div>
+        <div class="field"><label for="r-vuln">Vulnerability — zəiflik</label><input id="r-vuln" placeholder="məs. əlavə təsdiq yoxdur"></div>
+        <div class="field wide"><label for="r-impact">Impact — mümkün nəticə</label><input id="r-impact" placeholder="məs. maliyyə itkisi, şikayətlər, nüfuz zərəri"></div>
+        <div class="field wide"><div class="row" style="justify-content:space-between"><label for="r-stmt">Risk ifadəsi</label><button type="button" class="ghost" id="buildStmt">Şablonla qur</button></div>
+          <textarea id="r-stmt" placeholder="[Aktor] [zəiflikdən] istifadə edərək [aktivə] qarşı [hadisə] törədə bilər; bu, [nəticəyə] səbəb ola bilər."></textarea></div>
+        <div class="field"><label for="r-l">Likelihood (1–5)</label><select id="r-l"><option value="1">1 · Rare</option><option value="2">2 · Unlikely</option><option value="3" selected>3 · Possible</option><option value="4">4 · Likely</option><option value="5">5 · Almost Certain</option></select></div>
+        <div class="field"><label for="r-i">Impact (1–5)</label><select id="r-i"><option value="1">1 · Insignificant</option><option value="2">2 · Minor</option><option value="3" selected>3 · Moderate</option><option value="4">4 · Major</option><option value="5">5 · Severe</option></select></div>
+        <div class="field"><span class="hint" style="font-weight:600;color:var(--ink-2)">Risk balı</span><div class="scorebox"><span class="num" id="r-score">9</span><span class="pill Orta" id="r-level">Orta</span></div></div>
+        <div class="field wide"><label for="r-why">Balın əsaslandırılması</label><input id="r-why" placeholder="məs. son ayda 3 oxşar insident (INC-001); əlavə təsdiq yoxdur"></div>
+        <div class="field"><label for="r-owner">Risk sahibi (rol)</label><input id="r-owner" placeholder="məs. Rəqəmsal bankçılıq rəhbəri"></div>
+        <div class="field"><label for="r-controls">Mövcud nəzarətlər</label><input id="r-controls" placeholder="məs. SMS OTP"></div>
+        <div class="field wide"><span class="hint" style="font-weight:600;color:var(--ink-2)">Əlaqəli insidentlər</span><div class="cia" id="r-links"><span class="hint">Əvvəlcə 2-ci addımda insident qeydə alın.</span></div></div>
+      </div>
+      <ul class="checks" id="riskChecks"></ul>
+      <div class="row"><button class="primary" type="submit" id="riskSubmit">Reyestrə əlavə et</button><button type="button" id="riskCancel" hidden>Ləğv et</button></div>
+    </form>
+    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Risk ifadəsi</th><th>Aktiv</th><th>L</th><th>I</th><th>Bal</th><th>Səviyyə</th><th>Sahib</th><th>İnsidentlər</th><th></th></tr></thead><tbody id="riskRows"></tbody></table></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="panel" id="p-matrix" role="tabpanel" aria-labelledby="tab-matrix" hidden>
+    <div class="intro">
+      <h2>Risk matrisi</h2>
+      <p class="muted">Reyestrdəki hər risk Likelihood və Impact balına görə yerləşdirilir. Hədlər dərsin nümunə şkalasıdır: 20–25 Kritik, 10–16 Yüksək, 5–9 Orta, 1–4 Aşağı.</p>
+    </div>
+    <div class="sheet">
+      <div class="matrix" id="matrix"></div>
+      <div class="legend"><span class="pill Kritik">Kritik · 20–25</span><span class="pill Yüksək">Yüksək · 10–16</span><span class="pill Orta">Orta · 5–9</span><span class="pill Aşağı">Aşağı · 1–4</span><span class="hint">Sətir: Likelihood · Sütun: Impact</span></div>
+    </div>
+    <div class="sheet exportbox">
+      <h3>İşi müəllimə göndərin</h3>
+      <p class="muted">Hər reyestri CSV faylı kimi yükləyin (Excel açır) və ya mətni kopyalayıb LMS-ə yapışdırın.</p>
+      <div class="row">
+        <button class="primary" id="dlInc">İnsident reyestri · CSV</button>
+        <button class="primary" id="dlRisk">Risk reyestri · CSV</button>
+        <button id="copyAll">Hər ikisini kopyala</button>
+      </div>
+      <textarea id="exportText" readonly hidden aria-label="İxrac mətni"></textarea>
+    </div>
+    <div class="footer">
+      <span class="hint">Nümunə qeydlər “Nümunə” nişanı ilə göstərilir; onları silə bilərsiniz.</span>
+      <div class="row" id="resetArea"><button class="danger" id="resetBtn">Hamısını sil</button></div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+  "use strict";
+  var KEY = "abc-reyestr-lab-v1";
+  var EVENTS = [
+    {id:"E1", src:"Çağrı mərkəzi", text:"12.10.2026 — 3 müştəri fişinq SMS-dən sonra mobil bankçılıq hesablarından icazəsiz köçürmə olduğunu bildirdi.", kind:"İnsident", why:"Artıq baş verib: tarix və faktiki zərər var."},
+    {id:"E2", src:"Zəiflik skanı", text:"Ödəniş serveri PAY-01 dörd aydır təhlükəsizlik yeniləməsi almayıb.", kind:"Zəiflik", why:"Hadisə baş verməyib; bu, istismar edilə bilən çatışmazlıqdır."},
+    {id:"E3", src:"SOC", text:"18.10.2026 — DDoS hücumu nəticəsində mobil bankçılıq 2 saat əlçatmaz oldu.", kind:"İnsident", why:"Faktiki Availability pozuntusu baş verib."},
+    {id:"E4", src:"Daxili audit", text:"İşdən çıxmış 7 əməkdaşın Active Directory hesabı hələ də aktivdir.", kind:"Zəiflik", why:"Hesablar istifadə olunmayıb; nəzarət çatışmazlığıdır."},
+    {id:"E5", src:"DLP qeydi", text:"20.10.2026 — Əməkdaş səhvən 240 müştərinin siyahısını kənar e-poçt ünvanına göndərdi.", kind:"İnsident", why:"Məlumat artıq kənara çıxıb: Confidentiality pozulub."},
+    {id:"E6", src:"İT əməliyyatları", text:"Backup nüsxələrinin bərpası son 12 ayda bir dəfə də sınaqdan keçirilməyib.", kind:"Zəiflik", why:"Prosesdə çatışmazlıqdır; hələ heç nə itməyib."},
+    {id:"E7", src:"Data mərkəzi", text:"22.10.2026 — Core Banking serveri elektrik kəsilməsi səbəbindən 40 dəqiqə dayandı; UPS işə düşmədi.", kind:"İnsident", why:"Baş verib və xidmət dayanıb."},
+    {id:"E8", src:"Threat intel", text:"Regionda banklara qarşı yeni ransomware kampaniyası barədə xəbərdarlıq daxil olub.", kind:"Təhdid məlumatı", why:"Bankda hələ heç nə baş verməyib; bu, gələcək təhdid barədə xəbərdir."}
+  ];
+  var KINDS = ["İnsident","Zəiflik","Təhdid məlumatı"];
+
+  function exampleState(){
+    return {
+      group:"", answers:{}, checked:false,
+      incidents:[{id:"INC-001", example:true, date:"2026-10-12", asset:"Mobile Banking App, müştəri hesabları", sev:"Yüksək", status:"Araşdırılır", desc:"3 müştəri fişinq SMS-dən sonra hesablarından icazəsiz köçürmə olduğunu bildirdi.", c:true, i:true, a:false, cause:"Köçürmədə əlavə təsdiq yoxdur", action:"Hesablar bloklandı, müştərilər məlumatlandırıldı"}],
+      risks:[{id:"R-001", example:true, asset:"Müştəri hesabları", actor:"Xarici kibercinayətkar", threat:"fişinqlə icazəsiz giriş və saxta köçürmə", vuln:"köçürmədə əlavə təsdiqin olmaması", impact:"maliyyə itkisi, şikayətlər və nüfuz zərəri", stmt:"Xarici kibercinayətkar köçürmədə əlavə təsdiqin olmamasından istifadə edərək fişinqlə əldə etdiyi məlumatla müştəri hesabına daxil olaraq saxta köçürmə edə bilər; bu, maliyyə itkisinə, şikayətlərə və nüfuz zərərinə səbəb ola bilər.", l:4, i:5, why:"Son ayda 3 oxşar insident (INC-001); əlavə təsdiq yoxdur", owner:"Rəqəmsal bankçılıq rəhbəri", controls:"SMS OTP", links:["INC-001"]}]
+    };
+  }
+  var S;
+  try { S = JSON.parse(localStorage.getItem(KEY) || "null"); } catch(e){ S = null; }
+  if(!S || !Array.isArray(S.incidents) || !Array.isArray(S.risks)) S = exampleState();
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+  function level(score){ return score >= 20 ? "Kritik" : score >= 10 ? "Yüksək" : score >= 5 ? "Orta" : "Aşağı"; }
+  function toast(msg){ var t=$("toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(function(){ t.hidden=true; }, 2200); }
+  function nextId(list, prefix){ var max=0; list.forEach(function(x){ var n=parseInt(String(x.id).split("-")[1],10); if(n>max) max=n; }); return prefix + "-" + String(max+1).padStart(3,"0"); }
+
+  /* tabs */
+  var tabs = ["events","inc","risk","matrix"];
+  function show(name){
+    tabs.forEach(function(t){ var on=t===name; $("tab-"+t).setAttribute("aria-selected", on?"true":"false"); $("p-"+t).hidden=!on; });
+    if(name==="matrix") renderMatrix();
+    if(name==="risk") renderLinks(currentLinks());
+    try{ localStorage.setItem(KEY+"-tab", name); }catch(e){}
+  }
+  tabs.forEach(function(t){ $("tab-"+t).addEventListener("click", function(){ show(t); }); });
+
+  /* group */
+  $("groupName").value = S.group || "";
+  $("groupName").addEventListener("input", function(e){ S.group = e.target.value; save(); });
+
+  /* STEP 1 */
+  function renderEvents(){
+    var box=$("events"); box.innerHTML="";
+    var right=0;
+    EVENTS.forEach(function(ev){
+      var ans = S.answers[ev.id] || "";
+      var div=document.createElement("div"); div.className="ev";
+      var opts='<option value="">Növü seçin…</option>'+KINDS.map(function(k){ return '<option'+(k===ans?' selected':'')+'>'+k+'</option>'; }).join("");
+      div.innerHTML='<span class="src">'+esc(ev.id)+'<br>'+esc(ev.src)+'</span><p>'+esc(ev.text)+'</p>'+
+        '<select id="ev-'+ev.id+'" aria-label="'+esc(ev.id)+' növü">'+opts+'</select>'+
+        '<button type="button" class="ghost" data-reg="'+ev.id+'"'+(ans==="İnsident"?'':' hidden')+'>Qeydə al →</button>';
+      if(S.checked && ans){
+        var ok = ans===ev.kind; if(ok) right++;
+        var fb=document.createElement("p"); fb.className="fb "+(ok?"good":"bad");
+        fb.textContent=(ok?"Düzdür. ":"Yenidən düşünün — bu, "+ev.kind.toLowerCase()+"dir. ")+ev.why;
+        div.appendChild(fb);
+      }
+      box.appendChild(div);
+    });
+    box.querySelectorAll("select").forEach(function(sel){
+      sel.addEventListener("change", function(){ var id=sel.id.slice(3); S.answers[id]=sel.value; save(); renderEvents(); });
+    });
+    box.querySelectorAll("[data-reg]").forEach(function(b){
+      b.addEventListener("click", function(){ prefillIncident(EVENTS.filter(function(e){return e.id===b.dataset.reg;})[0]); });
+    });
+    var answered = Object.keys(S.answers).filter(function(k){ return S.answers[k]; }).length;
+    $("eventsScore").textContent = S.checked ? (right+" / "+EVENTS.length+" düz · "+answered+" cavablandırılıb") : (answered+" / "+EVENTS.length+" cavablandırılıb");
+  }
+  $("checkEvents").addEventListener("click", function(){ S.checked=true; save(); renderEvents(); });
+
+  function prefillIncident(ev){
+    resetIncForm();
+    var m = ev.text.match(/^(\d{2})\.(\d{2})\.(\d{4})\s+—\s+(.*)$/);
+    if(m){ $("i-date").value=m[3]+"-"+m[2]+"-"+m[1]; $("i-desc").value=m[4]; } else { $("i-desc").value=ev.text; }
+    show("inc"); $("i-asset").focus(); toast(ev.id+" forma köçürüldü — aktivi və CIA-nı doldurun");
+  }
+
+  /* STEP 2 */
+  var editingInc=null;
+  function incFromForm(){
+    return {date:$("i-date").value, asset:$("i-asset").value.trim(), sev:$("i-sev").value, status:$("i-status").value, desc:$("i-desc").value.trim(), c:$("i-c").checked, i:$("i-i").checked, a:$("i-a").checked, cause:$("i-cause").value.trim(), action:$("i-action").value.trim()};
+  }
+  function incChecks(x){
+    var out=[];
+    if(!x.date) out.push("Tarixi yazın: insident konkret vaxtda baş verib.");
+    if(!x.desc) out.push("Nə baş verdiyini təsvir edin.");
+    if(!x.asset) out.push("Təsirlənən aktivi göstərin.");
+    if(!x.c && !x.i && !x.a) out.push("Ən azı bir CIA xüsusiyyəti seçin.");
+    if(x.desc && hasWord(x.desc,["bilər"])) out.push("“bilər” gələcək zamandır — bu, risk kimi səslənir. İnsident baş vermiş faktdır.");
+    return out;
+  }
+  function resetIncForm(){
+    editingInc=null; $("incForm").reset(); $("i-sev").value="Yüksək";
+    $("incFormTitle").textContent="Yeni insident"; $("incSubmit").textContent="Reyestrə əlavə et"; $("incCancel").hidden=true; $("incChecks").hidden=true;
+    $("incNextId").textContent=nextId(S.incidents,"INC");
+  }
+  $("incCancel").addEventListener("click", resetIncForm);
+  $("incForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var x=incFromForm(), errs=incChecks(x), ul=$("incChecks");
+    ul.innerHTML=errs.map(function(t){ return "<li>"+esc(t)+"</li>"; }).join(""); ul.hidden=!errs.length;
+    if(errs.length) return;
+    if(editingInc){ var idx=S.incidents.findIndex(function(r){return r.id===editingInc;}); x.id=editingInc; S.incidents[idx]=x; toast(editingInc+" yeniləndi"); }
+    else { x.id=nextId(S.incidents,"INC"); S.incidents.push(x); toast(x.id+" reyestrə əlavə olundu"); }
+    save(); resetIncForm(); renderInc(); renderCounts();
+  });
+  function renderInc(){
+    var tb=$("incRows");
+    if(!S.incidents.length){ tb.innerHTML='<tr><td colspan="9" class="empty">Hələ insident yoxdur. 1-ci addımda “Qeydə al” düyməsi ilə və ya yuxarıdakı forma ilə başlayın.</td></tr>'; return; }
+    tb.innerHTML=S.incidents.map(function(r){
+      var cia=[r.c?"C":"",r.i?"I":"",r.a?"A":""].filter(Boolean).join(" · ");
+      return '<tr><td class="id">'+esc(r.id)+(r.example?'<br><span class="pill example">Nümunə</span>':'')+'</td><td class="mono">'+esc(r.date)+'</td><td><div class="stmt">'+esc(r.desc)+'</div></td><td>'+esc(r.asset)+'</td><td class="mono">'+esc(cia)+'</td><td><span class="pill '+esc(r.sev)+'">'+esc(r.sev)+'</span></td><td><span class="pill status">'+esc(r.status)+'</span></td><td><div class="stmt">'+esc(r.cause)+(r.action?'<br><span class="muted">'+esc(r.action)+'</span>':'')+'</div></td>'+
+        '<td><div class="row"><button class="ghost" data-edit-inc="'+esc(r.id)+'">Redaktə</button><button class="ghost danger" data-del-inc="'+esc(r.id)+'">Sil</button></div></td></tr>';
+    }).join("");
+    tb.querySelectorAll("[data-edit-inc]").forEach(function(b){ b.addEventListener("click", function(){
+      var r=S.incidents.filter(function(x){return x.id===b.dataset.editInc;})[0]; editingInc=r.id;
+      $("i-date").value=r.date; $("i-asset").value=r.asset; $("i-sev").value=r.sev; $("i-status").value=r.status; $("i-desc").value=r.desc; $("i-c").checked=!!r.c; $("i-i").checked=!!r.i; $("i-a").checked=!!r.a; $("i-cause").value=r.cause||""; $("i-action").value=r.action||"";
+      $("incFormTitle").textContent=r.id+" redaktə olunur"; $("incSubmit").textContent="Yadda saxla"; $("incCancel").hidden=false; $("incNextId").textContent=""; $("i-desc").focus();
+    }); });
+    tb.querySelectorAll("[data-del-inc]").forEach(function(b){ b.addEventListener("click", function(){
+      var id=b.dataset.delInc; S.incidents=S.incidents.filter(function(x){return x.id!==id;});
+      S.risks.forEach(function(r){ r.links=(r.links||[]).filter(function(l){return l!==id;}); });
+      save(); renderInc(); renderRisk(); renderCounts(); toast(id+" silindi");
+    }); });
+  }
+
+  /* STEP 3 */
+  var editingRisk=null;
+  function currentLinks(){ return Array.prototype.slice.call(document.querySelectorAll("#r-links input:checked")).map(function(i){return i.value;}); }
+  function renderLinks(selected){
+    var box=$("r-links");
+    if(!S.incidents.length){ box.innerHTML='<span class="hint">Əvvəlcə 2-ci addımda insident qeydə alın.</span>'; return; }
+    box.innerHTML=S.incidents.map(function(r){ return '<label><input type="checkbox" value="'+esc(r.id)+'"'+(selected.indexOf(r.id)>-1?' checked':'')+'> <span class="mono">'+esc(r.id)+'</span></label>'; }).join("");
+  }
+  function riskFromForm(){
+    return {asset:$("r-asset").value.trim(), actor:$("r-actor").value.trim(), threat:$("r-threat").value.trim(), vuln:$("r-vuln").value.trim(), impact:$("r-impact").value.trim(), stmt:$("r-stmt").value.trim(), l:+$("r-l").value, i:+$("r-i").value, why:$("r-why").value.trim(), owner:$("r-owner").value.trim(), controls:$("r-controls").value.trim(), links:currentLinks()};
+  }
+  function hasWord(text, words){ return new RegExp("(^|[\\s,.;:!?()«»“”\"'])("+words.join("|")+")(?=$|[\\s,.;:!?()«»“”\"'])","i").test(text); }
+  var PAST_WORDS=["oldu","verdi","etdi","göndərdi","dayandı","bildirdi","oğurlandı","sızdı","baş verib","olub","edib","itirdi"];
+  function riskChecks(x){
+    var out=[], ok=[];
+    ["asset","actor","threat","vuln","impact"].forEach(function(k){ if(!x[k]) out.push({asset:"Aktiv",actor:"Threat Actor",threat:"Threat",vuln:"Vulnerability",impact:"Impact"}[k]+" boşdur — beş elementin hamısı lazımdır."); });
+    if(!x.stmt) out.push("Risk ifadəsini yazın və ya “Şablonla qur” düyməsini basın.");
+    else {
+      if(!hasWord(x.stmt,["bilər"])) out.push("Risk ifadəsi gələcəyə yönəlməlidir: “… edə bilər” formasında yazın.");
+      else ok.push("Gələcək zaman: düzdür.");
+      if(hasWord(x.stmt,PAST_WORDS)) out.push("İfadədə keçmiş zaman var — bu, insident təsviri kimi səslənir.");
+      if(/\[|\]/.test(x.stmt)) out.push("Şablondakı mötərizələri öz sözlərinizlə əvəz edin.");
+    }
+    if(!x.why) out.push("Balı nəyə əsasən verdiyinizi yazın (sübut, insident, nəzarət).");
+    if(!x.owner) out.push("Risk sahibini (rol) göstərin.");
+    return {errs:out, ok:ok};
+  }
+  function liveChecks(){
+    var x=riskFromForm(), s=x.l*x.i, lv=level(s);
+    $("r-score").textContent=s; var p=$("r-level"); p.textContent=lv; p.className="pill "+lv;
+    var r=riskChecks(x), anyInput=x.asset||x.actor||x.threat||x.vuln||x.impact||x.stmt;
+    $("riskChecks").innerHTML = anyInput ? r.errs.map(function(t){return "<li>"+esc(t)+"</li>";}).join("")+r.ok.map(function(t){return '<li class="ok">'+esc(t)+'</li>';}).join("") : "";
+  }
+  ["r-asset","r-actor","r-threat","r-vuln","r-impact","r-stmt","r-l","r-i","r-why","r-owner"].forEach(function(id){ $(id).addEventListener("input", liveChecks); $(id).addEventListener("change", liveChecks); });
+  $("buildStmt").addEventListener("click", function(){
+    var x=riskFromForm();
+    var t=(x.actor||"[Aktor]")+" "+(x.vuln||"[zəiflik]")+" səbəbindən "+(x.asset||"[aktiv]")+" üzərində "+(x.threat||"[hadisə]")+" törədə bilər; bu, "+(x.impact||"[nəticə]")+" ilə nəticələnə bilər.";
+    $("r-stmt").value=t.charAt(0).toUpperCase()+t.slice(1); $("r-stmt").focus(); liveChecks();
+    toast("Şablon dolduruldu — cümləni öz sözlərinizlə düzəldin");
+  });
+  function resetRiskForm(){
+    editingRisk=null; $("riskForm").reset(); $("r-l").value="3"; $("r-i").value="3";
+    $("riskFormTitle").textContent="Yeni risk"; $("riskSubmit").textContent="Reyestrə əlavə et"; $("riskCancel").hidden=true;
+    $("riskNextId").textContent=nextId(S.risks,"R"); renderLinks([]); liveChecks();
+  }
+  $("riskCancel").addEventListener("click", resetRiskForm);
+  $("riskForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var x=riskFromForm(), r=riskChecks(x);
+    if(r.errs.length){ liveChecks(); $("riskChecks").scrollIntoView({block:"nearest"}); toast("Əvvəlcə qeydləri düzəldin"); return; }
+    if(editingRisk){ var idx=S.risks.findIndex(function(q){return q.id===editingRisk;}); x.id=editingRisk; S.risks[idx]=x; toast(editingRisk+" yeniləndi"); }
+    else { x.id=nextId(S.risks,"R"); S.risks.push(x); toast(x.id+" reyestrə əlavə olundu"); }
+    save(); resetRiskForm(); renderRisk(); renderCounts();
+  });
+  function renderRisk(){
+    var tb=$("riskRows");
+    if(!S.risks.length){ tb.innerHTML='<tr><td colspan="10" class="empty">Hələ risk yoxdur. Yuxarıdakı formada beş elementi doldurub ilk riski əlavə edin.</td></tr>'; return; }
+    var rows=S.risks.slice().sort(function(a,b){ return b.l*b.i - a.l*a.i; });
+    tb.innerHTML=rows.map(function(r){
+      var s=r.l*r.i, lv=level(s);
+      return '<tr><td class="id">'+esc(r.id)+(r.example?'<br><span class="pill example">Nümunə</span>':'')+'</td><td><div class="stmt">'+esc(r.stmt)+'</div>'+(r.why?'<div class="hint">'+esc(r.why)+'</div>':'')+'</td><td>'+esc(r.asset)+'</td><td class="mono">'+r.l+'</td><td class="mono">'+r.i+'</td><td class="mono"><b>'+s+'</b></td><td><span class="pill '+lv+'">'+lv+'</span></td><td>'+esc(r.owner)+'</td><td class="mono">'+esc((r.links||[]).join(", ")||"—")+'</td>'+
+        '<td><div class="row"><button class="ghost" data-edit-risk="'+esc(r.id)+'">Redaktə</button><button class="ghost danger" data-del-risk="'+esc(r.id)+'">Sil</button></div></td></tr>';
+    }).join("");
+    tb.querySelectorAll("[data-edit-risk]").forEach(function(b){ b.addEventListener("click", function(){
+      var r=S.risks.filter(function(x){return x.id===b.dataset.editRisk;})[0]; editingRisk=r.id;
+      ["asset","actor","threat","vuln","impact","stmt","why","owner","controls"].forEach(function(k){ $("r-"+k).value=r[k]||""; });
+      $("r-l").value=String(r.l); $("r-i").value=String(r.i); renderLinks(r.links||[]);
+      $("riskFormTitle").textContent=r.id+" redaktə olunur"; $("riskSubmit").textContent="Yadda saxla"; $("riskCancel").hidden=false; $("riskNextId").textContent="";
+      liveChecks(); $("riskForm").scrollIntoView({block:"start"});
+    }); });
+    tb.querySelectorAll("[data-del-risk]").forEach(function(b){ b.addEventListener("click", function(){
+      var id=b.dataset.delRisk; S.risks=S.risks.filter(function(x){return x.id!==id;}); save(); renderRisk(); renderCounts(); toast(id+" silindi");
+    }); });
+  }
+
+  /* STEP 4 */
+  function renderMatrix(){
+    var m=$("matrix"), h="";
+    for(var L=5; L>=1; L--){
+      h+='<div class="ax">'+L+'</div>';
+      for(var I=1; I<=5; I++){
+        var s=L*I, lv=level(s);
+        var ids=S.risks.filter(function(r){ return r.l===L && r.i===I; }).map(function(r){ return '<span>'+esc(r.id)+'</span>'; }).join("");
+        h+='<div class="cell c-'+lv+'" title="L'+L+' × I'+I+' = '+s+', '+lv+'"><span class="sc">'+s+'</span><div class="ids">'+ids+'</div></div>';
+      }
+    }
+    h+='<div></div>'; for(var j=1;j<=5;j++) h+='<div class="ax">'+j+'</div>';
+    m.innerHTML=h;
+  }
+  function csv(rows){ return "﻿"+rows.map(function(r){ return r.map(function(v){ v=String(v==null?"":v); return /[",;\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; }).join(","); }).join("\n"); }
+  function incCsv(){ return csv([["Qrup","ID","Tarix","Təsvir","Aktiv","C","I","A","Ciddilik","Status","Səbəb","Tədbir"]].concat(S.incidents.map(function(r){ return [S.group,r.id,r.date,r.desc,r.asset,r.c?"x":"",r.i?"x":"",r.a?"x":"",r.sev,r.status,r.cause,r.action]; }))); }
+  function riskCsv(){ return csv([["Qrup","ID","Aktiv","Threat Actor","Threat","Vulnerability","Impact","Risk ifadəsi","L","I","Bal","Səviyyə","Əsaslandırma","Sahib","Nəzarətlər","Əlaqəli insidentlər"]].concat(S.risks.map(function(r){ var s=r.l*r.i; return [S.group,r.id,r.asset,r.actor,r.threat,r.vuln,r.impact,r.stmt,r.l,r.i,s,level(s),r.why,r.owner,r.controls,(r.links||[]).join(" ")]; }))); }
+  function fileBase(){ return (S.group||"qrup").replace(/[^\wəöüğıçşƏÖÜĞIÇŞ -]/g,"").trim().replace(/\s+/g,"-")||"qrup"; }
+  var downloadsP = null;
+  function getDl(){ if(!downloadsP){ downloadsP = (window.claude && window.claude.use) ? Promise.resolve(window.claude.use("downloads")).catch(function(){ return null; }) : Promise.resolve(null); } return downloadsP; }
+  setTimeout(getDl, 0);
+  function showText(text){ var ta=$("exportText"); ta.value=text; ta.hidden=false; ta.focus(); ta.select(); }
+  async function offer(name, text){
+    var dl=null; try{ dl=await getDl(); }catch(e){}
+    if(!dl){
+      try{ var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000); toast("Fayl yükləndi"); }
+      catch(e){ showText(text.replace(/^﻿/,"")); toast("Yükləmə alınmadı — mətni kopyalayın"); }
+      return;
+    }
+    try{ await dl.save({filename:name, data:text}); toast("Fayl hazırdır"); }
+    catch(e){ if(e && e.code==="declined") return; showText(text.replace(/^﻿/,"")); toast("Yükləmə alınmadı — mətni kopyalayın"); }
+  }
+  $("dlInc").addEventListener("click", function(){ offer(fileBase()+"-insident-reyestri.csv", incCsv()); });
+  $("dlRisk").addEventListener("click", function(){ offer(fileBase()+"-risk-reyestri.csv", riskCsv()); });
+  $("copyAll").addEventListener("click", function(){
+    var text="İNSİDENT REYESTRİ\n"+incCsv().replace(/^﻿/,"")+"\n\nRİSK REYESTRİ\n"+riskCsv().replace(/^﻿/,"");
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(function(){ toast("Kopyalandı"); }, function(){ showText(text); toast("Mətni seçib kopyalayın"); }); }
+    else { showText(text); toast("Mətni seçib kopyalayın"); }
+  });
+  function bindReset(){
+    $("resetBtn").addEventListener("click", function(){
+      $("resetArea").innerHTML='<div class="confirm">Bütün qeydlər və cavablar silinsin? <button class="danger" id="resetYes">Bəli, sil</button><button id="resetNo">Xeyr</button></div>';
+      $("resetYes").addEventListener("click", function(){ var g=S.group; S={group:g,answers:{},checked:false,incidents:[],risks:[]}; save(); restore(); renderAll(); toast("Reyestrlər təmizləndi"); });
+      $("resetNo").addEventListener("click", restore);
+    });
+  }
+  function restore(){ $("resetArea").innerHTML='<button class="danger" id="resetBtn">Hamısını sil</button>'; bindReset(); }
+  bindReset();
+
+  function renderCounts(){
+    $("cnt-inc").textContent=S.incidents.length+" insident";
+    $("cnt-risk").textContent=S.risks.length+" risk";
+  }
+  function renderAll(){ renderEvents(); renderInc(); renderRisk(); renderCounts(); resetIncForm(); resetRiskForm(); renderMatrix(); }
+  renderAll();
+  var startTab="events"; try{ startTab=localStorage.getItem(KEY+"-tab")||"events"; }catch(e){}
+  if(tabs.indexOf(startTab)<0) startTab="events";
+  show(startTab);
+})();
+</script>
+
+</body>
+</html>
